@@ -18,7 +18,12 @@ class UsuarioFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'nombre' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'password' => 'password',
+            'edad' => fake()->numberBetween(18, 80),
+            'imagen' => null,
+            'rol' => 'usuario',
         ];
     }
 }
