@@ -8,7 +8,7 @@ class RegisterUserDTO
      * Create a new class instance.
      */
     public function __construct(
-        public readonly string $name,
+        public readonly string $nombre,
         public readonly string $email,
         public readonly string $password,
         public readonly int $edad,
@@ -17,7 +17,7 @@ class RegisterUserDTO
     public function toArray(): array
     {
         return [
-            'name'        => $this->name,
+            'nombre'        => $this->nombre,
             'email' => $this->email,
             'password'       => $this->password,
             'edad'       => $this->edad,
@@ -27,7 +27,7 @@ class RegisterUserDTO
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data["name"],
+            nombre: $data["nombre"],
             email: $data["email"],
             password: $data["password"],
             edad: $data["edad"],
