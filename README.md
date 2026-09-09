@@ -89,17 +89,13 @@ php artisan test
 Este proyecto es de código abierto y está disponible bajo la Licencia MIT.
 
 
-```markdown
-## 👥 Integrantes del Squad 1
+## 👥 Integrantes del Squad 1 Laravel
 
 - **Héctor Darío Sol** - [@hectordsol](https://github.com/hectordsol)
 - **Alejandro Ramirez** - [@ramirezaed](https://github.com/ramirezaed)
 - **Julio Andres** - [@JulioAndres2021](https://github.com/JulioAndres2021)
 - **David Mach** - [@dav-mach](https://github.com/dav-mach)
 - **Manuel Coria** - [@coriawork](https://github.com/coriawork)
-```
 
-```markdown
 ## 👥 Mentor
 - **Jean Paul Ferreira** - [@JePaFe](https://github.com/JePaFe)
-```
