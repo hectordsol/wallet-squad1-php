@@ -17,13 +17,14 @@ class CbuGenerator
     }
 
     // genera el cbu de forma aleatoria
+    //primeros digitos 0000009
     private static function generateRandomCbu(): string
     {
-        $digits = '';
-        for ($i = 0; $i < 22; $i++) {
-            $digits .= random_int(0, 9);
+        $cbu = '0000009';
+        for ($i = 0; $i < 15; $i++) {
+            $cbu .= random_int(0, 9);
         }
-        return $digits;
+        return $cbu;
     }
 
     // verifica si el cbu generado existe en la bd
