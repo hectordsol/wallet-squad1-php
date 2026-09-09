@@ -28,7 +28,8 @@ class registerUserFormRequest extends FormRequest
             "nombre" => "required|string",
             "email" => "required|string|unique:usuarios",
             "password" => "required|string|confirmed",
-            "edad" => "required|integer|min:18"
+            "edad" => "required|integer|min:18",
+            "rol" => "sometimes|required|string"
         ];
     }
 
@@ -38,7 +39,7 @@ class registerUserFormRequest extends FormRequest
 
             // Campos requeridos
             'nombre.required' => 'El nombre es obligatorio.',
-            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.required' => 'El correo electronico es obligatorio.',
             'password.required' => 'La contraseña es obligatoria.',
             'edad.required' => 'La edad es obligatoria.',
 
@@ -47,7 +48,7 @@ class registerUserFormRequest extends FormRequest
             // Formato específico
             'email.email' => 'El correo electrónico debe tener un formato válido.',
             // Unicidad
-            'email.unique' => 'Este correo electrónico ya está registrado.',
+            'email.unique' => 'Este correo electronico ya esta registrado.',
             // Longitud/valor mínimo
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
             'edad.min' => 'Debes tener al menos 18 años para registrarte.',
@@ -55,6 +56,10 @@ class registerUserFormRequest extends FormRequest
             'nombre.string' => 'El nombre debe ser texto.',
             'email.string' => 'El correo electrónico debe ser texto.',
             'password.string' => 'La contraseña debe ser texto.',
+            // Mensajes para el campo rol
+            'rol.required' => 'El rol es obligatorio.',
+            'rol.string' => 'El rol debe ser texto.',
+            'rol.in' => 'El rol debe ser uno de los siguientes: admin, usuario, moderador.',
         ];
     }
     public function toDTO(): RegisterUserDTO
@@ -63,7 +68,8 @@ class registerUserFormRequest extends FormRequest
             nombre: $this->input("nombre"),
             email: $this->input("email"),
             password: $this->input("password"),
-            edad: $this->input("edad")
+            edad: $this->input("edad"),
+            rol: $this->input("rol")
         );
     }
 }

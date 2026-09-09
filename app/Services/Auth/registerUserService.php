@@ -17,6 +17,7 @@ class registerUserService
     {
         //crea la cuneta del usario(el password se hashea en el modelo)
         $usuario = Usuario::create($data->toArray());
+        $usuario->refresh(); //se usa para traer el rol por default
         //agrega el id del usuario al dto
         $cuenta = new createAccountDTO(
             usuario_id: $usuario->id
