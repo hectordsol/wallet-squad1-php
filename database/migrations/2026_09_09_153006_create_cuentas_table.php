@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cuentas', function (Blueprint $table) {
-            $table->id('id_cuenta');
-            $table->foreignId('id_usuario')
-                ->constrained('usuarios', 'id_usuario')
+            $table->id();
+            $table->foreignId('usuario_id')
+                ->constrained('usuarios')
                 ->cascadeOnDelete();
             $table->string('cbu', 22)->unique();
             $table->decimal('saldo', 15, 2)->default(0);
             $table->enum('tipo', ['ahorro', 'corriente'])->default('ahorro');
             $table->enum('moneda', ['ARS', 'USD'])->default('ARS');
-            $table->unique('id_usuario');
+            $table->unique('usuario_id');
             $table->timestamps();
         });
     }

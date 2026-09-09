@@ -19,7 +19,7 @@ class CuentaFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_usuario' => Usuario::factory(),
+            'usuario_id' => Usuario::factory(),
             'cbu' => fake()->unique()->numerify('######################'),
             'saldo' => '0.00',
             'tipo' => 'ahorro',

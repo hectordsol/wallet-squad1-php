@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('movimientos', function (Blueprint $table) {
-            $table->id('id_movimiento');
-            $table->foreignId('id_cuenta')
-                ->constrained('cuentas', 'id_cuenta')
+            $table->id();
+            $table->foreignId('cuenta_id')
+                ->constrained('cuentas')
                 ->cascadeOnDelete();
             $table->enum('tipo', ['deposito', 'transferencia_salida', 'transferencia_entrada']);
             $table->decimal('monto', 15, 2);
             $table->string('cbu_contraparte', 22)->nullable();
-            $table->index(['id_cuenta', 'created_at']);
+            $table->index(['cuenta_id', 'created_at']);
             $table->timestamps();
         });
     }

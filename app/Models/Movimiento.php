@@ -14,10 +14,8 @@ class Movimiento extends Model
 
     protected $table = 'movimientos';
 
-    protected $primaryKey = 'id_movimiento';
-
     protected $fillable = [
-        'id_cuenta',
+        'cuenta_id',
         'tipo',
         'monto',
         'cbu_contraparte',
@@ -32,6 +30,6 @@ class Movimiento extends Model
 
     public function cuenta(): BelongsTo
     {
-        return $this->belongsTo(Cuenta::class, 'id_cuenta', 'id_cuenta');
+        return $this->belongsTo(Cuenta::class, 'cuenta_id');
     }
 }

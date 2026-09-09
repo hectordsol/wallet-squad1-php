@@ -14,16 +14,14 @@ class Favorito extends Model
 
     protected $table = 'favoritos';
 
-    protected $primaryKey = 'id_favorito';
-
     protected $fillable = [
-        'id_cuenta',
+        'cuenta_id',
         'cbu_favorito',
     ];
 
     public function cuentaPropietaria(): BelongsTo
     {
-        return $this->belongsTo(Cuenta::class, 'id_cuenta', 'id_cuenta');
+        return $this->belongsTo(Cuenta::class, 'cuenta_id');
     }
 
     public function cuentaFavorita(): BelongsTo

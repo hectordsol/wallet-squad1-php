@@ -14,8 +14,6 @@ class Usuario extends Model
 
     protected $table = 'usuarios';
 
-    protected $primaryKey = 'id_usuario';
-
     protected $fillable = [
         'nombre',
         'email',
@@ -40,6 +38,6 @@ class Usuario extends Model
 
     public function cuenta(): HasOne
     {
-        return $this->hasOne(Cuenta::class, 'id_usuario', 'id_usuario');
+        return $this->hasOne(Cuenta::class, 'usuario_id');
     }
 }

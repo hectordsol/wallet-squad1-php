@@ -15,10 +15,8 @@ class Cuenta extends Model
 
     protected $table = 'cuentas';
 
-    protected $primaryKey = 'id_cuenta';
-
     protected $fillable = [
-        'id_usuario',
+        'usuario_id',
         'cbu',
         'saldo',
         'tipo',
@@ -34,17 +32,17 @@ class Cuenta extends Model
 
     public function usuario(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 
     public function movimientos(): HasMany
     {
-        return $this->hasMany(Movimiento::class, 'id_cuenta', 'id_cuenta');
+        return $this->hasMany(Movimiento::class, 'cuenta_id');
     }
 
     public function favoritos(): HasMany
     {
-        return $this->hasMany(Favorito::class, 'id_cuenta', 'id_cuenta');
+        return $this->hasMany(Favorito::class, 'cuenta_id');
     }
 
     public function cuentasQueLaTienenComoFavorita(): HasMany

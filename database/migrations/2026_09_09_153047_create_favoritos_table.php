@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('favoritos', function (Blueprint $table) {
-            $table->id('id_favorito');
-            $table->foreignId('id_cuenta')
-                ->constrained('cuentas', 'id_cuenta')
+            $table->id();
+            $table->foreignId('cuenta_id')
+                ->constrained('cuentas')
                 ->cascadeOnDelete();
             $table->string('cbu_favorito', 22);
             $table->foreign('cbu_favorito')
                 ->references('cbu')
                 ->on('cuentas')
                 ->restrictOnDelete();
-            $table->unique(['id_cuenta', 'cbu_favorito']);
+            $table->unique(['cuenta_id', 'cbu_favorito']);
             $table->timestamps();
         });
     }
