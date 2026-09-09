@@ -2,14 +2,27 @@
 
 namespace App\Services\Auth;
 
+use App\DTO\Account\createAccountDTO;
 use App\DTO\Auth\RegisterUserDTO;
 use App\Models\Usuario;
+use App\Services\Account\createAccountService;
+
 
 class registerUserService
 {
+    //inyecta el servcio en el constructor
+    public function __construct(private createAccountService $createAccountService) {}
 
     public function create(RegisterUserDTO $data)
     {
-        return Usuario::create($data->toArray());
+        //crea la cuneta del usario(el password se hashea en el modelo)
+        $usuario = Usuario::create($data->toArray());
+        //agrega el id del usuario al dto
+        $cuenta = new createAccountDTO(
+            usuario_id: $usuario->id
+        );
+
+        $this->createAccountService->create($cuenta);
+        return $usuario;
     }
 }
