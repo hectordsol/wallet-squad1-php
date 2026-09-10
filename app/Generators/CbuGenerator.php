@@ -19,4 +19,3 @@ class CbuGenerator
         return $cbu;
     }
 }
-  //
