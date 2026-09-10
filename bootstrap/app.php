@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\AuthenticationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -32,6 +33,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 "status" => 422,
                 "error" => (object)[]
             ], 422);
+        });
+
+        // manejo de 401: no autenticado (sin token o token inválido)
+        $exceptions->render(function (AuthenticationException $exception, Request $request) {
+            if (!$request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => 'No autenticado',
+                'status'  => 401,
+                'error'   => (object) [],
+            ], 401);
         });
 
         // manejo de errores 500, error interno del servidor
