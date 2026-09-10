@@ -29,7 +29,7 @@ class AccountTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'cbu' => $account->cbu,
-                'balance' => '1500.50',
+                'saldo' => '1500.50',
             ]);
     }
     //Agregamos test para verificar que un usuario sin token no puede consultar su cuenta
@@ -64,7 +64,7 @@ class AccountTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'cbu' => $account1->cbu,
-                'balance' => '100.00',
+                'saldo' => '100.00',
             ])
             ->assertJsonMissing([
                 'cbu' => '0000000000000000000002',
