@@ -2,65 +2,31 @@
 
 namespace App\Models;
 
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
-use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+#[Fillable(['name', 'email', 'password'])]
+#[Hidden(['password', 'remember_token'])]
+class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    protected $table = 'users';
-
-    protected $fillable = [
-        'nombre',
-        'email',
-        'password',
-        'edad',
-        'imagen',
-        'rol',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
-            'edad' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    public function cuenta(): HasOne
-    {
-        return $this->hasOne(Cuenta::class, 'usuario_id');
-    }
-
-    // --- Métodos requeridos por JWTSubject ---
-
-    /**
-     * Identificador que se guarda en el claim "sub" del JWT.
-     */
-    public function getJWTIdentifier(): mixed
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Claims personalizados a incluir en el token. Vacío por ahora.
-     *
-     * @return array<string, mixed>
-     */
-    public function getJWTCustomClaims(): array
-    {
-        return [];
     }
 }
