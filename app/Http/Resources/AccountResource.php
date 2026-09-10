@@ -12,7 +12,7 @@ class AccountResource extends JsonResource
         //Retornamos el CBU y el saldo formateado a dos decimales como un string
         return [
             'cbu' => $this->cbu,
-            'balance' => number_format((float) $this->saldo, 2, '.', ''),
+            'saldo' => number_format((float) $this->saldo, 2, '.', ''),
         ];
     }
 }
