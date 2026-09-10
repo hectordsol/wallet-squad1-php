@@ -147,6 +147,156 @@ El proyecto de momento no incluye pruebas básica. Para ejecutarlas, utiliza el 
 ```bash
 php artisan test
 ```
+## WAL-005 — Consultar el perfil propio
+
+Permite obtener los datos personales del usuario autenticado.
+
+### Endpoint
+
+```http
+GET /api/v1/profile
+```
+
+### Autenticación
+
+Requiere un JWT válido mediante Bearer Token.
+
+```http
+Authorization: Bearer {token}
+```
+
+El usuario se obtiene directamente desde el token JWT, por lo que no es necesario enviar `user_id`. De esta forma, cada usuario solamente puede consultar su propio perfil.
+
+### Respuesta exitosa
+
+**HTTP 200 OK**
+
+```json
+{
+    "id": 2,
+    "name": "Julio",
+    "email": "julio2@test.com"
+}
+```
+
+La respuesta no incluye la contraseña ni otros datos privados del usuario.
+
+### Sin token o token inválido
+
+**HTTP 401 Unauthorized**
+
+La API rechaza el acceso cuando no se proporciona un JWT válido.
+
+---
+
+## WAL-006 — Consultar la cuenta y el saldo propios
+
+Permite obtener el CBU y saldo de la cuenta perteneciente al usuario autenticado.
+
+### Endpoint
+
+```http
+GET /api/v1/account
+```
+
+### Autenticación
+
+Requiere un JWT válido mediante Bearer Token.
+
+```http
+Authorization: Bearer {token}
+```
+
+La cuenta se obtiene a través del usuario identificado por el JWT. No es necesario enviar `user_id` ni `account_id`, evitando que un usuario pueda seleccionar o consultar la cuenta de otro usuario.
+
+### Respuesta exitosa
+
+**HTTP 200 OK**
+
+```json
+{
+    "cbu": "0000009341854172124306",
+    "balance": "0.00"
+}
+```
+
+El campo `balance` se devuelve siempre con dos decimales.
+
+### Cuenta inexistente
+
+**HTTP 404 Not Found**
+
+```json
+{
+    "message": "Cuenta no encontrada"
+}
+```
+
+### Sin token o token inválido
+
+**HTTP 401 Unauthorized**
+
+La API rechaza el acceso cuando no se proporciona un JWT válido.
+
+---
+
+## Ejemplo de uso
+
+Primero se inicia sesión para obtener el JWT:
+
+```http
+POST /api/v1/auth/login
+```
+
+```json
+{
+    "email": "julio2@test.com",
+    "password": "12345678"
+}
+```
+
+Una vez obtenido el `access_token`, se utiliza como Bearer Token para consultar los endpoints privados:
+
+```http
+GET /api/v1/profile
+Authorization: Bearer {access_token}
+```
+
+```http
+GET /api/v1/account
+Authorization: Bearer {access_token}
+```
+
+## Implementación
+
+Para estos endpoints no se utilizan Form Requests ni DTOs porque las operaciones son consultas `GET` que no reciben datos de entrada.
+
+Se utilizan API Resources para controlar los campos expuestos por la API:
+
+- `ProfileResource`: transforma los datos del usuario y expone `id`, `name` y `email`.
+- `AccountResource`: transforma los datos de la cuenta y expone `cbu` y `balance`.
+
+Ambos endpoints se encuentran protegidos por el middleware:
+
+```php
+auth:api
+```
+
+El usuario autenticado se obtiene mediante el guard JWT:
+
+```php
+Auth::guard('api')->user();
+```
+
+Para consultar la cuenta se utiliza la relación entre el usuario autenticado y su cuenta, sin aceptar identificadores enviados por el cliente.
+
+### Tests WAL-005 y WAL-006
+
+Los endpoints de perfil y cuenta cuentan con tests de integración.
+
+```bash
+php artisan test
+
 
 ## 📄 Licencia
 
