@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('cuentas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('usuario_id')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->cascadeOnDelete();
             $table->string('cbu', 22)->unique();
             $table->decimal('saldo', 15, 2)->default(0);
