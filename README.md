@@ -147,6 +147,77 @@ El proyecto de momento no incluye pruebas básica. Para ejecutarlas, utiliza el 
 ```bash
 php artisan test
 ```
+## WAL-007 — Permite hacer depósito
+
+Como usuario autenticado, quiere depositar dinero en mi cuenta.
+
+Primero inicia sesión para obtener el JWT:
+
+### Primero iniciar sesion
+```http
+POST /api/v1/auth/login
+```
+
+```json
+{
+    "email": "julio2@test.com",
+    "password": "12345678"
+}
+```
+
+Una vez obtenido el `access_token`, se utiliza como Bearer Token para realizar un depósito:
+
+### Endpoint para depositar
+```http
+POST /api/v1/deposits
+Authorization: Bearer {access_token}
+```
+Cuerpo de la Petición (JSON):
+
+```json
+{
+    "amount" : 1000
+}
+```
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `ammount` | decimal | Si | Monto a depositar en cuenta propia, no negativo mayor a 0 |
+
+**Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green)
+
+```json
+{
+    "cbu": "0000009517611939773286",
+    "saldo": "1101.00"
+}
+```
+
+- Opera sólo sobre la cuenta autenticada y aumenta exactamente su saldo.
+- Crea exactamente un movimiento `"deposito"` con la misma cuenta y monto en la tabal Movimientos.
+- Devuelve el nuevo saldo con dos decimales.
+
+En caso de envío erroneo o cero devuelve 422:
+
+```json
+{
+    "amount" : -4
+}
+```
+
+**Respuesta no exitosa:** ![422 Unprocessable content](https://img.shields.io/badge/422-Unprocessable_content-red)
+
+```json
+{
+    "message": "El monto debe ser al menos 0.01.",
+    "status": 422,
+    "error": {}
+}
+```
+
+
+### 🧪 Pruebas (Tests)
+
+Los endpoints `/api/v1/deposits` cuenta cuentan con tests de integración de usuario autenticado y casos de error en el envío del monto.
 ## WAL-005 — Consultar el perfil propio
 
 Permite obtener los datos personales del usuario autenticado.
