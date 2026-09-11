@@ -90,24 +90,31 @@ La API incluye un endpoint para el registro de nuevos usuarios en la billetera v
 ### Endpoint: POST /api/v1/auth/register
 
 Cuerpo de la Petición (JSON):
+```json
 {
-"nombre": "ale",
-"email": "usuario@usuario.com",
-"password": "1234",
-"password_confirmation": "1234",
-"edad": 18
+   "nombre": "ale",
+   "email": "usuario@usuario.com",
+   "password": "1234",
+   "password_confirmation": "1234",
+   "edad": 18
 }
+```
 
 Campos:
-nombre: string, obligatorio. Nombre del usuario.
-email: string, obligatorio. Correo electrónico único.
-password: string, obligatorio. Contraseña del usuario.
-password_confirmation: string, obligatorio. Confirmación de la contraseña (debe coincidir con password).
-edad: integer, obligatorio. Edad del usuario.
-rol: string, opcional. Rol del usuario. Por defecto se asigna "usuario".
+
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `nombre` | string | Si | Nombre del usuario |
+| `email` | string | Si | Identifica el usuario como único|
+| `password` | string | Si | contraseña Obligatorio |
+| `password_confirmation` | string | Si | Confirmación de la contraseña (debe coincidir con password) |
+| `edad` | string | Si | Edad del usuario obligatorio mayor a 18|
+| `rol` | string | No | Por defecto se asigna "usuario" |
 
 ### Respuesta Exitosa (201 Created):
 
+```json
     {
     "id": 1,
     "nombre": "ale",
@@ -116,6 +123,7 @@ rol: string, opcional. Rol del usuario. Por defecto se asigna "usuario".
     "rol": "usuario",
     "created_at": "2026-01-01T00:00:00.000000Z"
     }
+```
 
 Respuestas de Error (422 Unprocessable Entity):
 El endpoint retorna un error 422 en los siguientes casos:
@@ -127,12 +135,15 @@ Email duplicado: Si el correo electrónico ya está registrado en el sistema.
 Validación de contraseña: Cuando password y password_confirmation no coinciden.
 
 Ejemplo de Respuesta de Error:
+```json
 {
-"message": "El email ya ha sido registrado.",
-"errors": {
-"email": ["El email ya ha sido registrado."]
+    "message": "El email ya ha sido registrado.",
+    "errors": {
+        "email": ["El email ya ha sido registrado."]
+    }
 }
-}
+```
+**Respuesta no exitosa:** ![422 Unprocessable content](https://img.shields.io/badge/422-Unprocessable_content-red)
 
 Notas:
 
@@ -178,12 +189,13 @@ El usuario se obtiene directamente desde el token JWT, por lo que no es necesari
     "email": "julio2@test.com"
 }
 ```
+**Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green).
 
 La respuesta no incluye la contraseña ni otros datos privados del usuario.
 
 ### Sin token o token inválido
 
-**HTTP 401 Unauthorized**
+**Respuesta no exitosa:** ![401 Unauthorized](https://img.shields.io/badge/401-Unauthorized-red)
 
 La API rechaza el acceso cuando no se proporciona un JWT válido.
 
@@ -211,7 +223,7 @@ La cuenta se obtiene a través del usuario identificado por el JWT. No es necesa
 
 ### Respuesta exitosa
 
-**HTTP 200 OK**
+**Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green).
 
 ```json
 {
@@ -224,7 +236,7 @@ El campo `balance` se devuelve siempre con dos decimales.
 
 ### Cuenta inexistente
 
-**HTTP 404 Not Found**
+**Respuesta no exitosa:**  ![404 Not Found](https://img.shields.io/badge/404-Not_Found-red)
 
 ```json
 {
@@ -296,7 +308,71 @@ Los endpoints de perfil y cuenta cuentan con tests de integración.
 
 ```bash
 php artisan test
+```
+## WAL-007 — Permite hacer depósito
 
+Como usuario autenticado, quiere depositar dinero en mi cuenta.
+
+Primero inicia sesión para obtener el JWT:
+
+```http
+POST /api/v1/auth/login
+```
+
+```json
+{
+    "email": "julio2@test.com",
+    "password": "12345678"
+}
+```
+
+Una vez obtenido el `access_token`, se utiliza como Bearer Token para realizar un depósito:
+
+```http
+GET /api/v1/deposits
+Authorization: Bearer {access_token}
+```
+Cuerpo de la Petición (JSON):
+
+```json
+{
+    "amount" : 1000
+}
+```
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `ammount` | decimal | Si | Monto a depositar en cuenta propia, no negativo mayor a 0 |
+
+**Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green)
+
+```json
+{
+    "cbu": "0000009517611939773286",
+    "saldo": "1101.00"
+}
+```
+
+- Opera sólo sobre la cuenta autenticada y aumenta exactamente su saldo.
+- Crea exactamente un movimiento `"deposito"` con la misma cuenta y monto en la tabal Movimientos.
+- Devuelve el nuevo saldo con dos decimales.
+
+En caso de envío erroneo o cero devuelve 422:
+
+```json
+{
+    "amount" : -4
+}
+```
+
+**Respuesta no exitosa:** ![422 Unprocessable content](https://img.shields.io/badge/422-Unprocessable_content-red)
+
+```json
+{
+    "message": "El monto debe ser al menos 0.01.",
+    "status": 422,
+    "error": {}
+}
+```
 
 ## 📄 Licencia
 
