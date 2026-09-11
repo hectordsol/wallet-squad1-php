@@ -244,6 +244,7 @@ El campo `balance` se devuelve siempre con dos decimales.
 ### Sin token o token inválido
 
 **HTTP 401 Unauthorized**
+**Respuesta no exitosa:**  ![401 Unauthorized](https://img.shields.io/badge/401-Unauthorized-red)
 
 La API rechaza el acceso cuando no se proporciona un JWT válido.
 
@@ -312,6 +313,7 @@ Como usuario autenticado, quiere depositar dinero en mi cuenta.
 
 Primero inicia sesión para obtener el JWT:
 
+### Primero iniciar sesion
 ```http
 POST /api/v1/auth/login
 ```
@@ -325,8 +327,9 @@ POST /api/v1/auth/login
 
 Una vez obtenido el `access_token`, se utiliza como Bearer Token para realizar un depósito:
 
+### Endpoint para depositar
 ```http
-GET /api/v1/deposits
+POST /api/v1/deposits
 Authorization: Bearer {access_token}
 ```
 Cuerpo de la Petición (JSON):
@@ -371,9 +374,10 @@ En caso de envío erroneo o cero devuelve 422:
 }
 ```
 
-## 🧪 Pruebas (Tests)
 
-El proyecto de momento no incluye pruebas básica. Para ejecutarlas, utiliza el siguiente comando:
+### 🧪 Pruebas (Tests)
+
+Los endpoints `/api/v1/deposits` cuenta cuentan con tests de integración de usuario autenticado y casos de error en el envío del monto.
 
 ## 📄 Licencia
 
