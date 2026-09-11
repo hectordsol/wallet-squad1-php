@@ -112,7 +112,7 @@ Campos:
 | `edad` | string | Si | Edad del usuario obligatorio mayor a 18|
 | `rol` | string | No | Por defecto se asigna "usuario" |
 
-### Respuesta Exitosa (201 Created):
+**Respuesta exitosa:** ![201 Created](https://img.shields.io/badge/201-Created-green)
 
 ```json
     {
@@ -151,9 +151,6 @@ Por defecto, todos los usuarios nuevos se registran con el rol "usuario".
 
 El rol "administrador" solo puede ser asignado manualmente desde la base de datos o mediante un proceso específico de administración.
 
-## 🧪 Pruebas (Tests)
-
-El proyecto de momento no incluye pruebas básica. Para ejecutarlas, utiliza el siguiente comando:
 
 ```bash
 php artisan test
@@ -373,6 +370,10 @@ En caso de envío erroneo o cero devuelve 422:
     "error": {}
 }
 ```
+
+## 🧪 Pruebas (Tests)
+
+El proyecto de momento no incluye pruebas básica. Para ejecutarlas, utiliza el siguiente comando:
 
 ## 📄 Licencia
 
