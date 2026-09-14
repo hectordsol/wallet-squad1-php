@@ -311,6 +311,81 @@ La API rechaza el acceso cuando no se proporciona un JWT válido.
 
 ---
 
+## WAL-008 — Transferir dinero entre cuentas
+
+Permite enviar dinero desde la cuenta autenticada hacia otra cuenta existente, registrada por su CBU.
+
+### Endpoint
+
+```http
+POST /api/v1/transfers
+```
+
+### Autenticación
+
+Requiere un JWT válido mediante Bearer Token.
+
+```http
+Authorization: Bearer {token}
+```
+
+### Cuerpo de la petición
+
+```json
+{
+  "destination_cbu": "0000009517611939773286",
+  "amount": 250.50
+}
+```
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `destination_cbu` | string | Sí | CBU de la cuenta destinataria. |
+| `amount` | numeric | Sí | Monto a transferir. Debe ser mayor a cero y no superar el saldo disponible. |
+
+### Comportamiento
+
+- La cuenta de origen es la cuenta del usuario autenticado.
+- La cuenta de destino se busca por su `cbu`.
+- Si la cuenta de origen o destino no existe, responde con `404`.
+- Si el monto supera el saldo disponible, responde con `422`.
+- La operación se ejecuta dentro de una transacción para asegurar consistencia.
+- Se registran dos movimientos:
+  - `transferencia_salida` en la cuenta origen.
+  - `transferencia_entrada` en la cuenta destino.
+
+### Respuesta exitosa
+
+**HTTP 200 OK**
+
+```json
+{
+  "message": "Transferencia realizada con éxito"
+}
+```
+
+### Cuenta inexistente
+
+**HTTP 404 Not Found**
+
+```json
+{
+  "message": "la cuenta de origen o destino no existe"
+}
+```
+
+### Saldo insuficiente
+
+**HTTP 422 Unprocessable Entity**
+
+```json
+{
+  "message": "Saldo insuficiente para realizar la transferencia"
+}
+```
+
+---
+
 ## Ejemplo de uso
 
 Primero se inicia sesión para obtener el JWT:
@@ -336,6 +411,18 @@ Authorization: Bearer {access_token}
 ```http
 GET /api/v1/account
 Authorization: Bearer {access_token}
+```
+
+```http
+POST /api/v1/transfers
+Authorization: Bearer {access_token}
+```
+
+```json
+{
+  "destination_cbu": "0000009517611939773286",
+  "amount": 250.50
+}
 ```
 
 ## Implementación
