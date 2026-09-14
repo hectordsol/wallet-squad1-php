@@ -18,7 +18,7 @@ class getTransactionsResource extends JsonResource
             "id" => $this->id,
             "tipo" => $this->tipo,
             "monto" => $this->monto,
-            "cbu_contraparte" => $this->monto
+            "cbu_contraparte" => $this->cbu_contraparte
         ];
     }
 }
