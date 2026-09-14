@@ -12,6 +12,7 @@ use App\Models\Movimiento;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 class MovementsController extends Controller
 {
     //
@@ -22,28 +23,28 @@ class MovementsController extends Controller
         $movements = $this->get_transactios_service->GetTransactios();
         return getTransactionsResource::collection($movements);
     }
-    
+
     public function transfer(Request $request): JsonResponse
     {
         $request->validate([
             'destination_cbu' => ['required', 'string'],
-            'amount' => ['required', 'numeric'],
+            'amount' => ['required', 'numeric', 'gt:0'],
         ]);
 
         $user_origen = Auth::guard('api')->user();
-        $account_origen = $user_origen->cuenta;
+        $account_origen = $user_origen?->cuenta;
         $account_destino = Cuenta::where('cbu', $request->destination_cbu)->first();
+
+        if (! $account_origen || ! $account_destino) {
+            return response()->json([
+                'message' => 'la cuenta de origen o destino no existe',
+            ], 404);
+        }
 
         if ($account_origen->cbu === $request->destination_cbu) {
             return response()->json([
                 'message' => 'No se puede transferir a la misma cuenta',
             ], 422);
-        }
-
-        if (!$account_origen || !$account_destino) {
-            return response()->json([
-                'message' => 'la cuenta de origen o destino no existe',
-            ], 404);
         }
 
         if ($account_origen->saldo < $request->amount) {
