@@ -4,7 +4,7 @@ namespace App\Services\Movements;
 
 use App\Models\Movimiento;
 
-class registerUserService
+class GetTransactionsService
 {
     public function GetTransactios()
     {
