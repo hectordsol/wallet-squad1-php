@@ -348,6 +348,7 @@ Authorization: Bearer {token}
 - La cuenta de origen es la cuenta del usuario autenticado.
 - La cuenta de destino se busca por su `cbu`.
 - Si la cuenta de origen o destino no existe, responde con `404`.
+- Si la cuenta de origen y destino son la misma, responde con `422`.
 - Si el monto supera el saldo disponible, responde con `422`.
 - La operación se ejecuta dentro de una transacción para asegurar consistencia.
 - Se registran dos movimientos:
@@ -371,6 +372,16 @@ Authorization: Bearer {token}
 ```json
 {
   "message": "la cuenta de origen o destino no existe"
+}
+```
+
+### Mismo CBU de origen y destino
+
+**HTTP 422 Unprocessable Entity**
+
+```json
+{
+  "message": "No se puede transferir a la misma cuenta"
 }
 ```
 

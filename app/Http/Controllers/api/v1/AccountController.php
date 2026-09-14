@@ -72,6 +72,12 @@ class AccountController extends Controller
         $user_origen = Auth::guard('api')->user();
         $account_origen = $user_origen->cuenta;
         $account_destino = Cuenta::where('cbu', $request->destination_cbu)->first();
+
+        if ($account_origen->cbu === $request->destination_cbu) {
+            return response()->json([
+                'message' => 'No se puede transferir a la misma cuenta',
+            ], 422);
+        }
         
         if (!$account_origen || !$account_destino) {
             return response()->json([
@@ -108,7 +114,7 @@ class AccountController extends Controller
                 'cbu_contraparte' => $account_origen->cbu,
             ]);
         });
-        
+
         return response()->json([
             'message' => 'Transferencia realizada con éxito',
         ], 200);
