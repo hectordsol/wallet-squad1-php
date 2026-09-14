@@ -24,6 +24,6 @@ Route::prefix('v1')->group(function () {
         //agrega ruta para consultrar movimientos
         Route::get("/movements", [MovementsController::class, "index"]);
         // TRANSFERIR DINERO
-        Route::post('/transfers', [AccountController::class, 'transfer']);
+        Route::post('/transfers', [MovementsController::class, 'transfer']);
     });
 });
