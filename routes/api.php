@@ -25,5 +25,9 @@ Route::prefix('v1')->group(function () {
         Route::get("/movements", [MovementsController::class, "index"]);
         // TRANSFERIR DINERO
         Route::post('/transfers', [MovementsController::class, 'transfer']);
+
+        Route::middleware('administrador')->get('/admin/ping', fn() => response()->json([
+            'message' => 'Acceso administrativo autorizado',
+        ]));
     });
 });
