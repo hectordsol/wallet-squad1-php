@@ -12,8 +12,6 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
 
-    // Ruta protegida de prueba: verifica 401 JSON sin token o con token inválido.
-
     Route::middleware('auth:api')->group(function () {
         
         // Agregamos ruta para el perfil del usuario autenticado
@@ -28,5 +26,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/transfers', [MovementsController::class, 'transfer']);
         // GUARDAR CBU DE TERCEROS (favoritos)
         Route::post('/cbu/{cbu}/users/{idUser}', [FavoriteController::class, 'store']);
+        // LISTAR CBU DE TERCEROS
+        Route::get('/cbu/users/{idUser}', [FavoriteController::class, 'index']);
+        // REMOVER CBU DE TERCEROS
+        Route::delete('/cbu/{cbu}/users/{idUser}', [FavoriteController::class, 'destroy']);
     });
 });
