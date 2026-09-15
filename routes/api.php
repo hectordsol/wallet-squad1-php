@@ -4,6 +4,7 @@ use App\Http\Controllers\api\v1\AccountController;
 use App\Http\Controllers\api\v1\AuthController;
 use App\Http\Controllers\api\v1\MovementsController;
 use App\Http\Controllers\api\v1\ProfileController;
+use App\Http\Controllers\api\v1\FavoriteController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -11,10 +12,8 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
 
-    // Ruta protegida de prueba: verifica 401 JSON sin token o con token inválido.
-    // Se reemplaza por los endpoints reales en WAL-005 / WAL-006.
     Route::middleware('auth:api')->group(function () {
-        Route::get('/ping', fn() => response()->json(['message' => 'pong']));
+        
         // Agregamos ruta para el perfil del usuario autenticado
         Route::get('/profile', [ProfileController::class, 'show']);
         // Agregamos ruta para la cuenta del usuario autenticado
@@ -25,6 +24,12 @@ Route::prefix('v1')->group(function () {
         Route::get("/movements", [MovementsController::class, "index"]);
         // TRANSFERIR DINERO
         Route::post('/transfers', [MovementsController::class, 'transfer']);
+        // GUARDAR CBU DE TERCEROS (favoritos)
+        Route::post('/cbu/{cbu}/users/{idUser}', [FavoriteController::class, 'store']);
+        // LISTAR CBU DE TERCEROS
+        Route::get('/cbu/users/{idUser}', [FavoriteController::class, 'index']);
+        // REMOVER CBU DE TERCEROS
+        Route::delete('/cbu/{cbu}/users/{idUser}', [FavoriteController::class, 'destroy']);
 
         Route::middleware('administrador')->get('/admin/ping', fn() => response()->json([
             'message' => 'Acceso administrativo autorizado',

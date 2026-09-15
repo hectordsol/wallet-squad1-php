@@ -7,6 +7,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\AuthenticationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -59,6 +61,19 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 401);
         });
 
+        // manejo de errores HTTP explicitos (abort): 403, 404, 422, etc.
+        $exceptions->render(function (HttpException $exception, Request $request) {
+            if (!$request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'status'  => $exception->getStatusCode(),
+                'error'   => (object) [],
+            ], $exception->getStatusCode());
+        });
+
         // manejo de errores 500, error interno del servidor
         $exceptions->render(function (\Throwable $exception, Request $request) {
             if (!$request->is("api/*")) {
@@ -73,3 +88,4 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 500);
         });
     })->create();
+    
