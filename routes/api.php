@@ -4,6 +4,7 @@ use App\Http\Controllers\api\v1\AccountController;
 use App\Http\Controllers\api\v1\AuthController;
 use App\Http\Controllers\api\v1\MovementsController;
 use App\Http\Controllers\api\v1\ProfileController;
+use App\Http\Controllers\api\v1\FavoriteController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -25,5 +26,7 @@ Route::prefix('v1')->group(function () {
         Route::get("/movements", [MovementsController::class, "index"]);
         // TRANSFERIR DINERO
         Route::post('/transfers', [MovementsController::class, 'transfer']);
+        // GUARDAR CBU DE TERCEROS (favoritos)
+        Route::post('/cbu/{cbu}/users/{idUser}', [FavoriteController::class, 'store']);
     });
 });
