@@ -7,7 +7,6 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Auth\AuthenticationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -35,57 +34,56 @@ return Application::configure(basePath: dirname(__DIR__))
             fn(Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
-
-        //maneja erroees 422, validaciones de datos
+        // maneja erroees 422, validaciones de datos
         $exceptions->render(function (ValidationException $exception, Request $request) {
-            if (!$request->is('api/*')) {
-                return null;
-            }
-            return response()->json([
-                "message" => $exception->getMessage(),
-                "status" => 422,
-                "error" => (object)[]
-            ], 422);
-        });
-
-        // manejo de 401: no autenticado (sin token o token inválido)
-        $exceptions->render(function (AuthenticationException $exception, Request $request) {
-            if (!$request->is('api/*')) {
-                return null;
-            }
-
-            return response()->json([
-                'message' => 'No autenticado',
-                'status'  => 401,
-                'error'   => (object) [],
-            ], 401);
-        });
-
-        // manejo de errores HTTP explicitos (abort): 403, 404, 422, etc.
-        $exceptions->render(function (HttpException $exception, Request $request) {
-            if (!$request->is('api/*')) {
+            if (! $request->is('api/*')) {
                 return null;
             }
 
             return response()->json([
                 'message' => $exception->getMessage(),
-                'status'  => $exception->getStatusCode(),
-                'error'   => (object) [],
+                'status' => 422,
+                'error' => (object) [],
+            ], 422);
+        });
+
+        // manejo de 401: no autenticado (sin token o token inválido)
+        $exceptions->render(function (AuthenticationException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => 'No autenticado',
+                'status' => 401,
+                'error' => (object) [],
+            ], 401);
+        });
+
+        // manejo de errores HTTP explicitos (abort): 403, 404, 422, etc.
+        $exceptions->render(function (HttpException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'status' => $exception->getStatusCode(),
+                'error' => (object) [],
             ], $exception->getStatusCode());
         });
 
         // manejo de errores 500, error interno del servidor
-        $exceptions->render(function (\Throwable $exception, Request $request) {
-            if (!$request->is("api/*")) {
+        $exceptions->render(function (Throwable $exception, Request $request) {
+            if (! $request->is('api/*')) {
                 return null;
             }
 
             return response()->json([
                 // "message" => "Error interno del servidor",
-                "message" => $exception->getMessage(),
-                "status" => 500,
-                "error" => (object)[]
+                'message' => $exception->getMessage(),
+                'status' => 500,
+                'error' => (object) [],
             ], 500);
         });
     })->create();
-    
