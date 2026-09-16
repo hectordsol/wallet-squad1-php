@@ -16,7 +16,10 @@ class loginUserService
      */
     public function login(LoginUserDTO $data): ?string
     {
-        $token = Auth::guard('api')->attempt($data->toArray());
+        $token = Auth::guard('api')->attempt(array_merge(
+            $data->toArray(),
+            ['eliminado' => false]
+        ));
 
         return $token === false ? null : $token;
     }

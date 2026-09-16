@@ -14,15 +14,19 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
 
     Route::middleware('auth:api')->group(function () {
-
+        Route::get('/ping', fn () => response()->json(['message' => 'pong']));
         // Agregamos ruta para el perfil del usuario autenticado
         Route::get('/profile', [ProfileController::class, 'show']);
+        // Agregamos ruta para actualizar el perfil del usuario autenticado
+        Route::put('/profile', [AuthController::class, 'update']);
+        // Agregamos ruta para eliminar/dar de baja usuario registrado/logueado
+        Route::delete('/profile', [AuthController::class, 'delete']);
         // Agregamos ruta para la cuenta del usuario autenticado
         Route::get('/account', [AccountController::class, 'show']);
         // Agregamos ruta para depostiar en cuenta del usuario autenticado
         Route::post('/deposits', [AccountController::class, 'store']);
-        //agrega ruta para consultrar movimientos
-        Route::get("/movements", [MovementsController::class, "index"]);
+        // agrega ruta para consultrar movimientos
+        Route::get('/movements', [MovementsController::class, 'index']);
         // TRANSFERIR DINERO
         Route::post('/transfers', [MovementsController::class, 'transfer']);
         // GUARDAR CBU DE TERCEROS (favoritos)

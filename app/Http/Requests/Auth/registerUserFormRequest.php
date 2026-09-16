@@ -5,7 +5,7 @@ namespace App\Http\Requests\Auth;
 use App\DTO\Auth\RegisterUserDTO;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Override;
+use Illuminate\Validation\Rule;
 
 class registerUserFormRequest extends FormRequest
 {
@@ -25,11 +25,18 @@ class registerUserFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "nombre" => "required|string",
-            "email" => "required|string|unique:users",
-            "password" => "required|string|confirmed",
-            "edad" => "required|integer|min:18",
-            "rol" => "sometimes|required|string"
+            'nombre' => 'required|string',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                Rule::unique('users', 'email')->where(
+                    fn ($query) => $query->where('eliminado', false)
+                ),
+            ],
+            'password' => 'required|string|confirmed',
+            'edad' => 'required|integer|min:18',
+            'rol' => 'sometimes|required|string',
         ];
     }
 
@@ -62,14 +69,15 @@ class registerUserFormRequest extends FormRequest
             'rol.in' => 'El rol debe ser uno de los siguientes: admin, usuario, moderador.',
         ];
     }
+
     public function toDTO(): RegisterUserDTO
     {
         return new RegisterUserDTO(
-            nombre: $this->input("nombre"),
-            email: $this->input("email"),
-            password: $this->input("password"),
-            edad: $this->input("edad"),
-            rol: $this->input("rol")
+            nombre: $this->input('nombre'),
+            email: $this->input('email'),
+            password: $this->input('password'),
+            edad: $this->input('edad'),
+            rol: $this->input('rol')
         );
     }
 }

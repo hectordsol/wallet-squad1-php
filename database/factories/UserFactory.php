@@ -26,6 +26,7 @@ class UserFactory extends Factory
             'edad' => fake()->numberBetween(18, 80),
             'imagen' => null,
             'rol' => 'usuario',
+            'eliminado' => false,
         ];
     }
 }
