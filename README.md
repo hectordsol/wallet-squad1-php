@@ -549,217 +549,7 @@ Auth::guard('api')->user();
 
 Para consultar la cuenta se utiliza la relación entre el usuario autenticado y su cuenta, sin aceptar identificadores enviados por el cliente.
 
-### Tests WAL-005 y WAL-006
 
-Los endpoints de perfil y cuenta cuentan con tests de integración.
-
-```bash
-php artisan test
-```
-
-## WAL-018 — Administrar transacciones o movimientos
-
-Permite a un usuario con rol `administrador` gestionar el historial de movimientos de las cuentas.
-
-Todas las rutas requieren autenticación JWT y rol de administrador.
-
-### Autenticación
-
-```http
-Authorization: Bearer {access_token}
-```
-
-Un usuario sin token recibe:
-
-HTTP 401 Unauthorized
-
-Un usuario autenticado con rol distinto de administrador recibe:
-
-HTTP 403 Forbidden
-
-```json
-{
-    "message": "No autorizado. Se requiere rol de administrador.",
-    "status": 403,
-    "error": {}
-}
-```
-
-Listar movimientos administrativos
-GET /api/v1/admin/movements
-
-El listado utiliza paginación nativa de Laravel y admite filtros y ordenamiento.
-
-Parámetros disponibles:
-
-Parámetro Tipo Descripción
-cuenta_id integer Filtra los movimientos por cuenta.
-usuario_id integer Filtra los movimientos por usuario propietario de la cuenta.
-orden string Orden por fecha. Valores permitidos: asc o desc.
-per_page integer Cantidad de elementos por página. Máximo: 100.
-
-Ejemplos:
-
-GET /api/v1/admin/movements?cuenta_id=1
-GET /api/v1/admin/movements?usuario_id=1
-GET /api/v1/admin/movements?orden=asc
-GET /api/v1/admin/movements?per_page=5
-
-Ejemplo de elemento devuelto:
-
-```json
-{
-    "id": 8,
-    "tipo": "deposito",
-    "monto": "250.00",
-    "cbu_contraparte": null,
-    "fecha": "2026-09-16T12:06:27.000000Z",
-    "cuenta": {
-        "id": 1,
-        "cbu": "0000009539205127166181",
-        "tipo": "ahorro",
-        "moneda": "ARS",
-        "usuario_id": 1
-    }
-}
-```
-
-Si se envía un valor inválido, por ejemplo:
-
-GET /api/v1/admin/movements?per_page=101
-
-la API responde:
-
-HTTP 422 Unprocessable Entity
-
-Crear un movimiento
-POST /api/v1/admin/movements
-
-Cuerpo de ejemplo:
-
-```json
-{
-    "cuenta_id": 1,
-    "tipo": "deposito",
-    "monto": 250,
-    "cbu_contraparte": null
-}
-```
-
-Campos:
-
-Campo Tipo Obligatorio Descripción
-cuenta_id integer Sí ID de una cuenta existente.
-tipo string Sí deposito, transferencia_salida o transferencia_entrada.
-monto numeric Sí Debe ser mayor que cero.
-cbu_contraparte string/null No CBU asociado al movimiento cuando corresponde.
-
-HTTP 201 Created
-
-```json
-{
-    "id": 9,
-    "tipo": "deposito",
-    "monto": "250.00",
-    "cbu_contraparte": null,
-    "fecha": "2026-09-16T12:15:42.000000Z",
-    "cuenta": {
-        "id": 1,
-        "cbu": "0000009539205127166181",
-        "tipo": "ahorro",
-        "moneda": "ARS",
-        "usuario_id": 1
-    }
-}
-```
-
-Consultar un movimiento
-GET /api/v1/admin/movements/{movimiento}
-
-Devuelve el movimiento solicitado junto con los datos de su cuenta.
-
-Actualizar un movimiento
-
-Se admite PUT o PATCH.
-
-PUT /api/v1/admin/movements/{movimiento}
-
-Ejemplo:
-
-```json
-{
-    "monto": 5000
-}
-```
-
-HTTP 200 OK
-
-```json
-{
-    "id": 9,
-    "tipo": "deposito",
-    "monto": "5000.00",
-    "cbu_contraparte": null,
-    "fecha": "2026-09-16T12:15:42.000000Z",
-    "cuenta": {
-        "id": 1,
-        "cbu": "0000009539205127166181",
-        "tipo": "ahorro",
-        "moneda": "ARS",
-        "usuario_id": 1
-    }
-}
-```
-
-Importante: modificar administrativamente un movimiento cambia únicamente el historial. No recalcula ni modifica automáticamente el saldo de la cuenta.
-
-Eliminar un movimiento
-DELETE /api/v1/admin/movements/{movimiento}
-
-HTTP 200 OK
-
-```json
-{
-    "message": "Movimiento eliminado correctamente"
-}
-```
-
-Eliminar un movimiento del historial administrativo no modifica automáticamente el saldo de la cuenta.
-
-Validaciones
-
-Al crear o actualizar un movimiento se validan:
-
-existencia de la cuenta;
-tipo de movimiento permitido;
-monto numérico mayor que cero;
-CBU contraparte, cuando se informa.
-
-Las validaciones incorrectas responden:
-
-HTTP 422 Unprocessable Entity
-
-Pruebas WAL-018
-
-Se agregaron tests de integración para comprobar:
-
-acceso de administrador;
-rechazo de usuario común con 403;
-rechazo sin token con 401;
-listado administrativo de movimientos;
-creación de movimientos;
-consulta individual;
-actualización;
-eliminación;
-filtros por cuenta;
-paginación;
-rechazo de per_page mayor a 100;
-actualización de movimientos sin modificar el saldo;
-eliminación de movimientos sin modificar el saldo.
-
-Para ejecutar la suite:
-
-php artisan test
 
 ## WAL-012 — Actualizar o eliminar el perfil propio
 
@@ -772,334 +562,6 @@ Tanto para actualizar con el método PUT o eliminar con el método DELETE del pe
     "error": {}
 }
 ```
-
-### 🔄 Actualizar Perfil de Usuario
-Actualiza la información del perfil del usuario autenticado. Todos los campos son opcionales; solo se actualizarán aquellos que envíes en la petición.
-
-- Método: PUT
-
-- URL: `/api/v1/auth/profile`
-
-- Autenticación: Requerida (Bearer Token)
-
-Modificar un archivo php.ini de Laravel Herd y reiniciar HERD:
-
-```text
-upload_tmp_dir = "C:\Users\usuario\AppData\Local\Temp"
-
-; Maximum allowed size for uploaded files.
-; https://php.net/upload-max-filesize
-upload_max_filesize = 8M
-
-; Maximum number of files that can be uploaded via a single request
-max_file_uploads = 20
-
-post_max_size=10M
-```
-
-Ejecutar una sola vez:
-
-```bash
-php artisan storage: link
-```
-
-Laravel crea un enlace entre:
-
-```text
-public/storage
-```
-
-y:
-
-```text
-storage/app/public
-```
-
-De esta manera, los archivos almacenados en el disco `public` pueden ser accedidos desde la aplicación.
-
-### 📥 Envío de datos (Body)
-
-Para enviar información en el Body de la petición, debes seleccionar la opción `form-data` en tu cliente HTTP (Postman, Insomnia, Thunder Client, etc.) y cargar únicamente los campos que deseas actualizar. Todos los campos son opcionales.
-
-### 📋 Campos disponibles
-
-| Campo | Tipo | Obligatorio | Descripción |
-|---|---|---|---|
-| `nombre` | string | No | Nombre del usuario |
-| `email` | string | No | Identifica el usuario como único |
-| `password` | string | No | contraseña nueva del usuario |
-| `password_confirmation` | string | Condicional | Confirmación de la contraseña (debe coincidir con password) |
-| `edad` | string | No | Edad del usuario debe ser mayor a 18 y menor a 120 |
-| `imagen` | File | No | Imagen de perfil. Debes seleccionar un archivo (tipo File) desde el selector de form-data |
-
-⚠️ Importante: 
-- Si envías el campo imagen, en form-data se debe cambiar el tipo de campo de Text a File y seleccionar el archivo desde tu equipo.
-
-
-**Respuesta no exitosa:** ![422 Unprocessable content](https://img.shields.io/badge/422-Unprocessable_content-red)
-
-📋 Tabla de errores por campo
-
-| Campo | Regla | Mensaje |
-|---|---|---|
-| `nombre` | max | El nombre del usuario no puede tener más de 255 caracteres. |
-| `email` | email | El correo electrónico debe tener un formato válido |
-| `email` | unique | El correo electrónico ya está en uso |
-| `password` | string | La contraseña debe tener al menos 8 caracteres |
-| `password` | confirmed | Debe ingresar nuevamente la misma contraseña |
-| `edad` | integer | La edad debe ser un número entero |
-| `edad` | between | La edad debe estar entre 18 y 120 años |
-| `imagen` | file | file	La imagen debe ser un archivo válido |
-| `imagen` | image | El archivo debe ser una imagen válida |
-| `imagen` | uploaded | No se pudo cargar la imagen. Verifica que no supere los 2 MB |
-| `imagen` | mimes | La imagen debe estar en formato JPG, JPEG, PNG o WebP. |
-
-### 🗑️ Eliminar Cuenta del Usuario Autenticado
-Elimina la cuenta del usuario autenticado mediante un borrado lógico (soft delete). El registro no se elimina físicamente de la base de datos;
-
-- Método: DELETE
-
-- URL: `/api/v1/profile`
-
-- Autenticación: Requerida (Bearer Token)
-
-- Body: Ninguno
-
-### 🔒 Comportamiento de la eliminación
-La eliminación del usuario no borra físicamente el registro ni sus datos relacionados. Se aplica un soft delete, por lo que:
-
-| Entidad afectada | Comportamiento |
-|---|---|
-| Usuario | Se marca como eliminado (deleted_at con la fecha/hora). El registro permanece en la tabla users |
-| Movimientos | Se conservan en la base de datos. Las claves foráneas permanecen intactas para preservar el historial |
-| CBU guardados | Se conservan en la base de datos. Las claves foráneas permanecen intactas |
-| Sesión / Token | Se revoca el token de acceso actual. El usuario ya no puede autenticarse |
-	
-
-### 🚫 Intento de ingreso tras la eliminación
-- Si el usuario intenta iniciar sesión luego de haber eliminado su cuenta:
-
-♻️ Registro nuevamente tras la eliminación
-Si el usuario intenta registrarse nuevamente con el mismo correo electrónico:
-
-- ✅ Se recupera la información previamente asociada a su cuenta.
-
-- El registro se restaura (se limpia el campo deleted_at).
-
-- Los movimientos y CBU guardados previamente asociados vuelven a estar disponibles automáticamente al reactivarse la cuenta.
-
-
-## WAL-018 — Administrar transacciones o movimientos
-
-Permite a un usuario con rol `administrador` gestionar el historial de movimientos de las cuentas.
-
-Todas las rutas requieren autenticación JWT y rol de administrador.
-
-### Autenticación
-
-````http
-Authorization: Bearer {access_token}
-```
-
-Un usuario sin token recibe:
-
-HTTP 401 Unauthorized
-
-Un usuario autenticado con rol distinto de administrador recibe:
-
-HTTP 403 Forbidden
-
-```json
-{
-    "message": "No autorizado. Se requiere rol de administrador.",
-    "status": 403,
-    "error": {}
-}
-```
-Listar movimientos administrativos
-GET /api/v1/admin/movements
-
-El listado utiliza paginación nativa de Laravel y admite filtros y ordenamiento.
-
-Parámetros disponibles:
-
-Parámetro	Tipo	Descripción
-cuenta_id	integer	Filtra los movimientos por cuenta.
-usuario_id	integer	Filtra los movimientos por usuario propietario de la cuenta.
-orden	string	Orden por fecha. Valores permitidos: asc o desc.
-per_page	integer	Cantidad de elementos por página. Máximo: 100.
-
-Ejemplos:
-
-GET /api/v1/admin/movements?cuenta_id=1
-GET /api/v1/admin/movements?usuario_id=1
-GET /api/v1/admin/movements?orden=asc
-GET /api/v1/admin/movements?per_page=5
-
-Ejemplo de elemento devuelto:
-
-```json
-{
-    "id": 8,
-    "tipo": "deposito",
-    "monto": "250.00",
-    "cbu_contraparte": null,
-    "fecha": "2026-09-16T12:06:27.000000Z",
-    "cuenta": {
-        "id": 1,
-        "cbu": "0000009539205127166181",
-        "tipo": "ahorro",
-        "moneda": "ARS",
-        "usuario_id": 1
-    }
-}
-```
-
-Si se envía un valor inválido, por ejemplo:
-
-GET /api/v1/admin/movements?per_page=101
-
-la API responde:
-
-HTTP 422 Unprocessable Entity
-
-Crear un movimiento
-POST /api/v1/admin/movements
-
-Cuerpo de ejemplo:
-```json
-{
-    "cuenta_id": 1,
-    "tipo": "deposito",
-    "monto": 250,
-    "cbu_contraparte": null
-}
-```
-
-Campos:
-
-Campo	Tipo	Obligatorio	Descripción
-cuenta_id	integer	Sí	ID de una cuenta existente.
-tipo	string	Sí	deposito, transferencia_salida o transferencia_entrada.
-monto	numeric	Sí	Debe ser mayor que cero.
-cbu_contraparte	string/null	No	CBU asociado al movimiento cuando corresponde.
-
-HTTP 201 Created
-
-```json
-{
-    "id": 9,
-    "tipo": "deposito",
-    "monto": "250.00",
-    "cbu_contraparte": null,
-    "fecha": "2026-09-16T12:15:42.000000Z",
-    "cuenta": {
-        "id": 1,
-        "cbu": "0000009539205127166181",
-        "tipo": "ahorro",
-        "moneda": "ARS",
-        "usuario_id": 1
-    }
-}
-```
-
-Consultar un movimiento
-GET /api/v1/admin/movements/{movimiento}
-
-Devuelve el movimiento solicitado junto con los datos de su cuenta.
-
-Actualizar un movimiento
-
-Se admite PUT o PATCH.
-
-PUT /api/v1/admin/movements/{movimiento}
-
-Ejemplo:
-
-```json
-{
-    "monto": 5000
-}
-```
-
-HTTP 200 OK
-
-```json
-{
-    "id": 9,
-    "tipo": "deposito",
-    "monto": "5000.00",
-    "cbu_contraparte": null,
-    "fecha": "2026-09-16T12:15:42.000000Z",
-    "cuenta": {
-        "id": 1,
-        "cbu": "0000009539205127166181",
-        "tipo": "ahorro",
-        "moneda": "ARS",
-        "usuario_id": 1
-    }
-}
-```
-
-Importante: modificar administrativamente un movimiento cambia únicamente el historial. No recalcula ni modifica automáticamente el saldo de la cuenta.
-
-Eliminar un movimiento
-DELETE /api/v1/admin/movements/{movimiento}
-
-HTTP 200 OK
-
-{
-    "message": "Movimiento eliminado correctamente"
-}
-
-Eliminar un movimiento del historial administrativo no modifica automáticamente el saldo de la cuenta.
-
-Validaciones
-
-Al crear o actualizar un movimiento se validan:
-
-existencia de la cuenta;
-tipo de movimiento permitido;
-monto numérico mayor que cero;
-CBU contraparte, cuando se informa.
-
-Las validaciones incorrectas responden:
-
-HTTP 422 Unprocessable Entity
-
-Pruebas WAL-018
-
-Se agregaron tests de integración para comprobar:
-
-acceso de administrador;
-rechazo de usuario común con 403;
-rechazo sin token con 401;
-listado administrativo de movimientos;
-creación de movimientos;
-consulta individual;
-actualización;
-eliminación;
-filtros por cuenta;
-paginación;
-rechazo de per_page mayor a 100;
-actualización de movimientos sin modificar el saldo;
-eliminación de movimientos sin modificar el saldo.
-
-Para ejecutar la suite:
-
-php artisan test
-
-## WAL-012 — Actualizar o eliminar el perfil propio
-
-Tanto para actualizar con el método PUT o eliminar con el método DELETE del perfil debe estar autenticado. En caso de intentar alguna de estas acciones sin autenticar devuelve sin no autorizado:
-
-```json
-{
-    "message": "No autenticado",
-    "status": 401,
-    "error": {}
-}
-````
 
 ### 🔄 Actualizar Perfil de Usuario
 
@@ -1183,6 +645,7 @@ Para enviar información en el Body de la petición, debes seleccionar la opció
 | `imagen`   | uploaded  | No se pudo cargar la imagen. Verifica que no supere los 2 MB |
 | `imagen`   | mimes     | La imagen debe estar en formato JPG, JPEG, PNG o WebP.       |
 
+
 ### 🗑️ Eliminar Cuenta del Usuario Autenticado
 
 Elimina la cuenta del usuario autenticado mediante un borrado lógico (soft delete). El registro no se elimina físicamente de la base de datos;
@@ -1195,18 +658,44 @@ Elimina la cuenta del usuario autenticado mediante un borrado lógico (soft dele
 
 - Body: Ninguno
 
-### 🔒 Comportamiento de la eliminación
+HTTP 204 No Content
 
+### 🔒 Comportamiento de la eliminación
 La eliminación del usuario no borra físicamente el registro ni sus datos relacionados. Se aplica un soft delete, por lo que:
 
-| Entidad afectada | Comportamiento                                                                                        |
-| ---------------- | ----------------------------------------------------------------------------------------------------- |
-| Usuario          | Se marca como eliminado (deleted_at con la fecha/hora). El registro permanece en la tabla users       |
-| Movimientos      | Se conservan en la base de datos. Las claves foráneas permanecen intactas para preservar el historial |
-| CBU guardados    | Se conservan en la base de datos. Las claves foráneas permanecen intactas                             |
-| Sesión / Token   | Se revoca el token de acceso actual. El usuario ya no puede autenticarse                              |
+| Entidad afectada | Comportamiento |
+|---|---|
+| Usuario | Se marca como eliminado (deleted_at con la fecha/hora). El registro permanece en la tabla users |
+| Movimientos | Se conservan en la base de datos. Las claves foráneas permanecen intactas para preservar el historial |
+| CBU guardados | Se conservan en la base de datos. Las claves foráneas permanecen intactas |
+| Sesión / Token | Se revoca el token de acceso actual. El usuario ya no puede autenticarse |
 
-### Simular plazo fijo
+
+
+### 🚫 Intento de ingreso tras la eliminación
+
+Si el usuario intenta iniciar sesión luego de haber eliminado su cuenta:
+
+- ❌ No se le permite el acceso.
+
+- ❌ La respuesta del login devolverá un error de credenciales inválidas (HTTP 401 Unauthorized):
+
+```json
+{
+  "message": "Credenciales inválidas."
+}
+```
+
+### ♻️ Registro nuevamente tras la eliminación
+
+Si el usuario intenta registrarse nuevamente con el mismo correo electrónico:
+
+- Se recupera la información previamente asociada a su cuenta.
+
+- Los movimientos y CBU guardados previamente asociados vuelven a estar disponibles automáticamente al reactivarse la cuenta.
+
+
+## WAL-014 Simular plazo fijo
 
 Permite simular una inversión a plazo fijo utilizando interés simple. El usuario autenticado envía el monto a invertir y el plazo en días, y la API devuelve el interés ganado, el total a recibir y las fechas de creación y finalización de la inversión.
 
@@ -1243,18 +732,215 @@ POST /api/v1/investments/fixed-term/simulate
 
     }
 
-### 🚫 Intento de ingreso tras la eliminación
 
-- Si el usuario intenta iniciar sesión luego de haber eliminado su cuenta:
+## WAL-018 — Administrar transacciones o movimientos
 
-♻️ Registro nuevamente tras la eliminación
-Si el usuario intenta registrarse nuevamente con el mismo correo electrónico:
+Permite a un usuario con rol `administrador` gestionar el historial de movimientos de las cuentas.
 
-- ✅ Se recupera la información previamente asociada a su cuenta.
+Todas las rutas requieren autenticación JWT y rol de administrador.
 
-- El registro se restaura (se limpia el campo deleted_at).
+### Autenticación
 
-- Los movimientos y CBU guardados previamente asociados vuelven a estar disponibles automáticamente al reactivarse la cuenta.
+```http
+Authorization: Bearer {access_token}
+```
+
+Un usuario sin token recibe:
+
+HTTP 401 Unauthorized
+
+Un usuario autenticado con rol distinto de administrador recibe:
+
+HTTP 403 Forbidden
+
+```json
+{
+    "message": "No autorizado. Se requiere rol de administrador.",
+    "status": 403,
+    "error": {}
+}
+```
+
+### Listar movimientos administrativos
+GET /api/v1/admin/movements
+
+El listado utiliza paginación nativa de Laravel y admite filtros y ordenamiento.
+
+Parámetros disponibles:
+
+Parámetro	Tipo	Descripción
+cuenta_id	integer	Filtra los movimientos por cuenta.
+usuario_id	integer	Filtra los movimientos por usuario propietario de la cuenta.
+orden	string	Orden por fecha. Valores permitidos: asc o desc.
+per_page	integer	Cantidad de elementos por página. Máximo: 100.
+
+Ejemplos:
+
+GET /api/v1/admin/movements?cuenta_id=1
+GET /api/v1/admin/movements?usuario_id=1
+GET /api/v1/admin/movements?orden=asc
+GET /api/v1/admin/movements?per_page=5
+
+Ejemplo de elemento devuelto:
+
+```json
+{
+    "id": 8,
+    "tipo": "deposito",
+    "monto": "250.00",
+    "cbu_contraparte": null,
+    "fecha": "2026-09-16T12:06:27.000000Z",
+    "cuenta": {
+        "id": 1,
+        "cbu": "0000009539205127166181",
+        "tipo": "ahorro",
+        "moneda": "ARS",
+        "usuario_id": 1
+    }
+}
+```
+
+Si se envía un valor inválido, por ejemplo:
+
+GET /api/v1/admin/movements?per_page=101
+
+la API responde:
+
+HTTP 422 Unprocessable Entity
+
+### Crear un movimiento
+POST /api/v1/admin/movements
+
+Cuerpo de ejemplo:
+```json
+{
+    "cuenta_id": 1,
+    "tipo": "deposito",
+    "monto": 250,
+    "cbu_contraparte": null
+}
+```
+
+Campos:
+
+| Campo                   | Tipo   | Obligatorio | Descripción                                                                               |
+| ----------------------- | ------ | ----------- | ----------------------------------------------------------------------------------------- |
+| `cuenta_id`	| integer	| Sí	| ID de una cuenta existente |
+| `tipo`	| string	| Sí	| deposito, transferencia_salida o transferencia_entrada |
+| `monto`	| numeric	| Sí	| Debe ser mayor que cero |
+| `cbu_contraparte`	| string/null	| No	| CBU asociado al movimiento cuando corresponde |
+
+HTTP 201 Created
+
+```json
+{
+    "id": 9,
+    "tipo": "deposito",
+    "monto": "250.00",
+    "cbu_contraparte": null,
+    "fecha": "2026-09-16T12:15:42.000000Z",
+    "cuenta": {
+        "id": 1,
+        "cbu": "0000009539205127166181",
+        "tipo": "ahorro",
+        "moneda": "ARS",
+        "usuario_id": 1
+    }
+}
+```
+
+### Consultar un movimiento
+GET /api/v1/admin/movements/{movimiento}
+
+Devuelve el movimiento solicitado junto con los datos de su cuenta.
+
+### Actualizar un movimiento
+
+Se admite PUT o PATCH.
+
+PUT /api/v1/admin/movements/{movimiento}
+
+Ejemplo:
+
+```json
+{
+    "monto": 5000
+}
+```
+
+HTTP 200 OK
+
+```json
+{
+    "id": 9,
+    "tipo": "deposito",
+    "monto": "5000.00",
+    "cbu_contraparte": null,
+    "fecha": "2026-09-16T12:15:42.000000Z",
+    "cuenta": {
+        "id": 1,
+        "cbu": "0000009539205127166181",
+        "tipo": "ahorro",
+        "moneda": "ARS",
+        "usuario_id": 1
+    }
+}
+```
+
+Importante: modificar administrativamente un movimiento cambia únicamente el historial. No recalcula ni modifica automáticamente el saldo de la cuenta.
+
+### Eliminar un movimiento
+
+DELETE /api/v1/admin/movements/{movimiento}
+
+HTTP 200 OK
+
+```json
+{
+    "message": "Movimiento eliminado correctamente"
+}
+```
+
+
+Eliminar un movimiento del historial administrativo no modifica automáticamente el saldo de la cuenta.
+
+### Validaciones
+
+Al crear o actualizar un movimiento se validan:
+
+- existencia de la cuenta;
+- tipo de movimiento permitido;
+- monto numérico mayor que cero;
+- CBU contraparte, cuando se informa.
+
+Las validaciones incorrectas responden:
+
+HTTP 422 Unprocessable Entity
+
+### Pruebas WAL-018
+
+Se agregaron tests de integración para comprobar:
+
+- acceso de administrador;
+- rechazo de usuario común con 403;
+- rechazo sin token con 401;
+- listado administrativo de movimientos;
+- creación de movimientos;
+- consulta individual;
+- actualización;
+- eliminación;
+- filtros por cuenta;
+- paginación;
+- rechazo de per_page mayor a 100;
+- actualización de movimientos sin modificar el saldo;
+- eliminación de movimientos sin modificar el saldo.
+
+Para ejecutar la suite:
+
+```bash
+php artisan test
+```
+
 
 
 ## 👥 Integrantes del Squad 1 Laravel
