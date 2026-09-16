@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Investments;
 
+use App\DTO\Investments\fixedTermDTO;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -41,5 +42,13 @@ class fixedTerRequest extends FormRequest
             'plazo.min'      => 'El plazo mínimo es de 30 días.',
             'plazo.max'      => 'El plazo máximo es de 365 días.',
         ];
+    }
+
+    public function toDTO(): fixedTermDTO
+    {
+        return new fixedTermDTO(
+            monto: $this->input("monto"),
+            plazo: $this->input("plazo"),
+        );
     }
 }
