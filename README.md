@@ -748,6 +748,192 @@ Para ejecutar la suite:
 
 php artisan test
 
+## WAL-018 — Administrar transacciones o movimientos
+
+Permite a un usuario con rol `administrador` gestionar el historial de movimientos de las cuentas.
+
+Todas las rutas requieren autenticación JWT y rol de administrador.
+
+### Autenticación
+
+```http
+Authorization: Bearer {access_token}
+
+Un usuario sin token recibe:
+
+HTTP 401 Unauthorized
+
+Un usuario autenticado con rol distinto de administrador recibe:
+
+HTTP 403 Forbidden
+
+{
+    "message": "No autorizado. Se requiere rol de administrador.",
+    "status": 403,
+    "error": {}
+}
+Listar movimientos administrativos
+GET /api/v1/admin/movements
+
+El listado utiliza paginación nativa de Laravel y admite filtros y ordenamiento.
+
+Parámetros disponibles:
+
+Parámetro	Tipo	Descripción
+cuenta_id	integer	Filtra los movimientos por cuenta.
+usuario_id	integer	Filtra los movimientos por usuario propietario de la cuenta.
+orden	string	Orden por fecha. Valores permitidos: asc o desc.
+per_page	integer	Cantidad de elementos por página. Máximo: 100.
+
+Ejemplos:
+
+GET /api/v1/admin/movements?cuenta_id=1
+GET /api/v1/admin/movements?usuario_id=1
+GET /api/v1/admin/movements?orden=asc
+GET /api/v1/admin/movements?per_page=5
+
+Ejemplo de elemento devuelto:
+
+{
+    "id": 8,
+    "tipo": "deposito",
+    "monto": "250.00",
+    "cbu_contraparte": null,
+    "fecha": "2026-09-16T12:06:27.000000Z",
+    "cuenta": {
+        "id": 1,
+        "cbu": "0000009539205127166181",
+        "tipo": "ahorro",
+        "moneda": "ARS",
+        "usuario_id": 1
+    }
+}
+
+Si se envía un valor inválido, por ejemplo:
+
+GET /api/v1/admin/movements?per_page=101
+
+la API responde:
+
+HTTP 422 Unprocessable Entity
+
+Crear un movimiento
+POST /api/v1/admin/movements
+
+Cuerpo de ejemplo:
+
+{
+    "cuenta_id": 1,
+    "tipo": "deposito",
+    "monto": 250,
+    "cbu_contraparte": null
+}
+
+Campos:
+
+Campo	Tipo	Obligatorio	Descripción
+cuenta_id	integer	Sí	ID de una cuenta existente.
+tipo	string	Sí	deposito, transferencia_salida o transferencia_entrada.
+monto	numeric	Sí	Debe ser mayor que cero.
+cbu_contraparte	string/null	No	CBU asociado al movimiento cuando corresponde.
+
+HTTP 201 Created
+
+{
+    "id": 9,
+    "tipo": "deposito",
+    "monto": "250.00",
+    "cbu_contraparte": null,
+    "fecha": "2026-09-16T12:15:42.000000Z",
+    "cuenta": {
+        "id": 1,
+        "cbu": "0000009539205127166181",
+        "tipo": "ahorro",
+        "moneda": "ARS",
+        "usuario_id": 1
+    }
+}
+Consultar un movimiento
+GET /api/v1/admin/movements/{movimiento}
+
+Devuelve el movimiento solicitado junto con los datos de su cuenta.
+
+Actualizar un movimiento
+
+Se admite PUT o PATCH.
+
+PUT /api/v1/admin/movements/{movimiento}
+
+Ejemplo:
+
+{
+    "monto": 5000
+}
+
+HTTP 200 OK
+
+{
+    "id": 9,
+    "tipo": "deposito",
+    "monto": "5000.00",
+    "cbu_contraparte": null,
+    "fecha": "2026-09-16T12:15:42.000000Z",
+    "cuenta": {
+        "id": 1,
+        "cbu": "0000009539205127166181",
+        "tipo": "ahorro",
+        "moneda": "ARS",
+        "usuario_id": 1
+    }
+}
+
+Importante: modificar administrativamente un movimiento cambia únicamente el historial. No recalcula ni modifica automáticamente el saldo de la cuenta.
+
+Eliminar un movimiento
+DELETE /api/v1/admin/movements/{movimiento}
+
+HTTP 200 OK
+
+{
+    "message": "Movimiento eliminado correctamente"
+}
+
+Eliminar un movimiento del historial administrativo no modifica automáticamente el saldo de la cuenta.
+
+Validaciones
+
+Al crear o actualizar un movimiento se validan:
+
+existencia de la cuenta;
+tipo de movimiento permitido;
+monto numérico mayor que cero;
+CBU contraparte, cuando se informa.
+
+Las validaciones incorrectas responden:
+
+HTTP 422 Unprocessable Entity
+
+Pruebas WAL-018
+
+Se agregaron tests de integración para comprobar:
+
+acceso de administrador;
+rechazo de usuario común con 403;
+rechazo sin token con 401;
+listado administrativo de movimientos;
+creación de movimientos;
+consulta individual;
+actualización;
+eliminación;
+filtros por cuenta;
+paginación;
+rechazo de per_page mayor a 100;
+actualización de movimientos sin modificar el saldo;
+eliminación de movimientos sin modificar el saldo.
+
+Para ejecutar la suite:
+
+php artisan test
 
 ## WAL-012 — Actualizar o eliminar el perfil propio
 
