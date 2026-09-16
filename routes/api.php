@@ -6,6 +6,7 @@ use App\Http\Controllers\api\v1\MovementsController;
 use App\Http\Controllers\api\v1\ProfileController;
 use App\Http\Controllers\api\v1\FavoriteController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\api\v1\AdminMovementController;
 
 Route::prefix('v1')->group(function () {
     // Rutas públicas de autenticación
@@ -13,7 +14,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
 
     Route::middleware('auth:api')->group(function () {
-        
+
         // Agregamos ruta para el perfil del usuario autenticado
         Route::get('/profile', [ProfileController::class, 'show']);
         // Agregamos ruta para la cuenta del usuario autenticado
@@ -31,8 +32,19 @@ Route::prefix('v1')->group(function () {
         // REMOVER CBU DE TERCEROS
         Route::delete('/cbu/{cbu}/users/{idUser}', [FavoriteController::class, 'destroy']);
 
-        Route::middleware('administrador')->get('/admin/ping', fn() => response()->json([
-            'message' => 'Acceso administrativo autorizado',
-        ]));
+        //Agregamos rutas para el administrador
+        Route::prefix('admin')->middleware('administrador')->group(function () {
+
+            Route::get('/ping', fn() => response()->json([
+                'message' => 'Acceso administrativo autorizado',
+            ]));
+
+            Route::get('/movements', [AdminMovementController::class, 'index']);
+            Route::post('/movements', [AdminMovementController::class, 'store']);
+            Route::get('/movements/{movimiento}', [AdminMovementController::class, 'show']);
+            Route::put('/movements/{movimiento}', [AdminMovementController::class, 'update']);
+            Route::patch('/movements/{movimiento}', [AdminMovementController::class, 'update']);
+            Route::delete('/movements/{movimiento}', [AdminMovementController::class, 'destroy']);
+        });
     });
 });
