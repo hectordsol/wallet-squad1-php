@@ -7,14 +7,16 @@ use App\Http\Controllers\api\v1\ProfileController;
 use App\Http\Controllers\api\v1\FavoriteController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\v1\AdminMovementController;
+use App\Http\Controllers\api\v1\investmentsController;
 
 Route::prefix('v1')->group(function () {
     // Rutas públicas de autenticación
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
 
+
     Route::middleware('auth:api')->group(function () {
-        Route::get('/ping', fn () => response()->json(['message' => 'pong']));
+        Route::get('/ping', fn() => response()->json(['message' => 'pong']));
         // Agregamos ruta para el perfil del usuario autenticado
         Route::get('/profile', [ProfileController::class, 'show']);
         // Agregamos ruta para actualizar el perfil del usuario autenticado
@@ -35,6 +37,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/cbu/users/{idUser}', [FavoriteController::class, 'index']);
         // REMOVER CBU DE TERCEROS
         Route::delete('/cbu/{cbu}/users/{idUser}', [FavoriteController::class, 'destroy']);
+
+        //Ruta simular plazo fijo
+        Route::post("/investments/fixed-term/simulate", [investmentsController::class, "store"]);
 
         //Agregamos rutas para el administrador
         Route::prefix('admin')->middleware('administrador')->group(function () {

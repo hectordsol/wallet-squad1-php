@@ -90,39 +90,39 @@ La API incluye un endpoint para el registro de nuevos usuarios en la billetera v
 ### Endpoint: POST /api/v1/auth/register
 
 Cuerpo de la Petición (JSON):
+
 ```json
 {
-   "nombre": "ale",
-   "email": "usuario@usuario.com",
-   "password": "1234",
-   "password_confirmation": "1234",
-   "edad": 18
+    "nombre": "ale",
+    "email": "usuario@usuario.com",
+    "password": "1234",
+    "password_confirmation": "1234",
+    "edad": 18
 }
 ```
 
 Campos:
 
-
-| Campo | Tipo | Obligatorio | Descripción |
-|---|---|---|---|
-| `nombre` | string | Si | Nombre del usuario |
-| `email` | string | Si | Identifica el usuario como único|
-| `password` | string | Si | contraseña Obligatorio |
-| `password_confirmation` | string | Si | Confirmación de la contraseña (debe coincidir con password) |
-| `edad` | string | Si | Edad del usuario obligatorio mayor a 18|
-| `rol` | string | No | Por defecto se asigna "usuario" |
+| Campo                   | Tipo   | Obligatorio | Descripción                                                 |
+| ----------------------- | ------ | ----------- | ----------------------------------------------------------- |
+| `nombre`                | string | Si          | Nombre del usuario                                          |
+| `email`                 | string | Si          | Identifica el usuario como único                            |
+| `password`              | string | Si          | contraseña Obligatorio                                      |
+| `password_confirmation` | string | Si          | Confirmación de la contraseña (debe coincidir con password) |
+| `edad`                  | string | Si          | Edad del usuario obligatorio mayor a 18                     |
+| `rol`                   | string | No          | Por defecto se asigna "usuario"                             |
 
 **Respuesta exitosa:** ![201 Created](https://img.shields.io/badge/201-Created-green)
 
 ```json
-    {
+{
     "id": 1,
     "nombre": "ale",
     "email": "usuario@usuario.com",
     "edad": 18,
     "rol": "usuario",
     "created_at": "2026-01-01T00:00:00.000000Z"
-    }
+}
 ```
 
 Respuestas de Error (422 Unprocessable Entity):
@@ -135,6 +135,7 @@ Email duplicado: Si el correo electrónico ya está registrado en el sistema.
 Validación de contraseña: Cuando password y password_confirmation no coinciden.
 
 Ejemplo de Respuesta de Error:
+
 ```json
 {
     "message": "El email ya ha sido registrado.",
@@ -143,6 +144,7 @@ Ejemplo de Respuesta de Error:
     }
 }
 ```
+
 **Respuesta no exitosa:** ![422 Unprocessable content](https://img.shields.io/badge/422-Unprocessable_content-red)
 
 Notas:
@@ -151,10 +153,10 @@ Por defecto, todos los usuarios nuevos se registran con el rol "usuario".
 
 El rol "administrador" solo puede ser asignado manualmente desde la base de datos o mediante un proceso específico de administración.
 
-
 ```bash
 php artisan test
 ```
+
 ## WAL-005 — Consultar el perfil propio
 
 Permite obtener los datos personales del usuario autenticado.
@@ -186,6 +188,7 @@ El usuario se obtiene directamente desde el token JWT, por lo que no es necesari
     "email": "julio2@test.com"
 }
 ```
+
 **Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green).
 
 La respuesta no incluye la contraseña ni otros datos privados del usuario.
@@ -233,7 +236,7 @@ El campo `balance` se devuelve siempre con dos decimales.
 
 ### Cuenta inexistente
 
-**Respuesta no exitosa:**  ![404 Not Found](https://img.shields.io/badge/404-Not_Found-red)
+**Respuesta no exitosa:** ![404 Not Found](https://img.shields.io/badge/404-Not_Found-red)
 
 ```json
 {
@@ -244,7 +247,7 @@ El campo `balance` se devuelve siempre con dos decimales.
 ### Sin token o token inválido
 
 **HTTP 401 Unauthorized**
-**Respuesta no exitosa:**  ![401 Unauthorized](https://img.shields.io/badge/401-Unauthorized-red)
+**Respuesta no exitosa:** ![401 Unauthorized](https://img.shields.io/badge/401-Unauthorized-red)
 
 La API rechaza el acceso cuando no se proporciona un JWT válido.
 
@@ -307,6 +310,7 @@ Los endpoints de perfil y cuenta cuentan con tests de integración.
 ```bash
 php artisan test
 ```
+
 ## WAL-007 — Permite hacer depósito
 
 Como usuario autenticado, quiere depositar dinero en mi cuenta.
@@ -314,6 +318,7 @@ Como usuario autenticado, quiere depositar dinero en mi cuenta.
 Primero inicia sesión para obtener el JWT:
 
 ### Primero iniciar sesion
+
 ```http
 POST /api/v1/auth/login
 ```
@@ -328,20 +333,23 @@ POST /api/v1/auth/login
 Una vez obtenido el `access_token`, se utiliza como Bearer Token para realizar un depósito:
 
 ### Endpoint para depositar
+
 ```http
 POST /api/v1/deposits
 Authorization: Bearer {access_token}
 ```
+
 Cuerpo de la Petición (JSON):
 
 ```json
 {
-    "amount" : 1000
+    "amount": 1000
 }
 ```
-| Campo | Tipo | Obligatorio | Descripción |
-|---|---|---|---|
-| `ammount` | decimal | Si | Monto a depositar en cuenta propia, no negativo mayor a 0 |
+
+| Campo     | Tipo    | Obligatorio | Descripción                                               |
+| --------- | ------- | ----------- | --------------------------------------------------------- |
+| `ammount` | decimal | Si          | Monto a depositar en cuenta propia, no negativo mayor a 0 |
 
 **Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green)
 
@@ -360,7 +368,7 @@ En caso de envío erroneo o cero devuelve 422:
 
 ```json
 {
-    "amount" : -4
+    "amount": -4
 }
 ```
 
@@ -373,6 +381,7 @@ En caso de envío erroneo o cero devuelve 422:
     "error": {}
 }
 ```
+
 ```http
 PUT /api/v1/profile
 Authorization: Bearer {access_token}
@@ -391,7 +400,6 @@ Una vez obtenido el `access_token`, se utiliza como Bearer Token para realizar u
 ### 🧪 Pruebas (Tests)
 
 Los endpoints `/api/v1/deposits` cuenta cuentan con tests de integración de usuario autenticado y casos de error en el envío del monto.
-
 
 ## WAL-008 — Transferir dinero entre cuentas
 
@@ -415,15 +423,15 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "destination_cbu": "0000009517611939773286",
-  "amount": 250.50
+    "destination_cbu": "0000009517611939773286",
+    "amount": 250.5
 }
 ```
 
-| Campo | Tipo | Obligatorio | Descripción |
-|---|---|---|---|
-| `destination_cbu` | string | Sí | CBU de la cuenta destinataria. |
-| `amount` | numeric | Sí | Monto a transferir. Debe ser mayor a cero y no superar el saldo disponible. |
+| Campo             | Tipo    | Obligatorio | Descripción                                                                 |
+| ----------------- | ------- | ----------- | --------------------------------------------------------------------------- |
+| `destination_cbu` | string  | Sí          | CBU de la cuenta destinataria.                                              |
+| `amount`          | numeric | Sí          | Monto a transferir. Debe ser mayor a cero y no superar el saldo disponible. |
 
 ### Comportamiento
 
@@ -434,8 +442,8 @@ Authorization: Bearer {token}
 - Si el monto supera el saldo disponible, responde con `422`.
 - La operación se ejecuta dentro de una transacción para asegurar consistencia.
 - Se registran dos movimientos:
-  - `transferencia_salida` en la cuenta origen.
-  - `transferencia_entrada` en la cuenta destino.
+    - `transferencia_salida` en la cuenta origen.
+    - `transferencia_entrada` en la cuenta destino.
 
 ### Respuesta exitosa
 
@@ -443,7 +451,7 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "message": "Transferencia realizada con éxito"
+    "message": "Transferencia realizada con éxito"
 }
 ```
 
@@ -453,7 +461,7 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "message": "la cuenta de origen o destino no existe"
+    "message": "la cuenta de origen o destino no existe"
 }
 ```
 
@@ -463,7 +471,7 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "message": "No se puede transferir a la misma cuenta"
+    "message": "No se puede transferir a la misma cuenta"
 }
 ```
 
@@ -473,7 +481,7 @@ Authorization: Bearer {token}
 
 ```json
 {
-  "message": "Saldo insuficiente para realizar la transferencia"
+    "message": "Saldo insuficiente para realizar la transferencia"
 }
 ```
 
@@ -513,8 +521,8 @@ Authorization: Bearer {access_token}
 
 ```json
 {
-  "destination_cbu": "0000009517611939773286",
-  "amount": 250.50
+    "destination_cbu": "0000009517611939773286",
+    "amount": 250.5
 }
 ```
 
@@ -560,6 +568,7 @@ Todas las rutas requieren autenticación JWT y rol de administrador.
 ```http
 Authorization: Bearer {access_token}
 ```
+
 Un usuario sin token recibe:
 
 HTTP 401 Unauthorized
@@ -583,11 +592,11 @@ El listado utiliza paginación nativa de Laravel y admite filtros y ordenamiento
 
 Parámetros disponibles:
 
-Parámetro	Tipo	Descripción
-cuenta_id	integer	Filtra los movimientos por cuenta.
-usuario_id	integer	Filtra los movimientos por usuario propietario de la cuenta.
-orden	string	Orden por fecha. Valores permitidos: asc o desc.
-per_page	integer	Cantidad de elementos por página. Máximo: 100.
+Parámetro Tipo Descripción
+cuenta_id integer Filtra los movimientos por cuenta.
+usuario_id integer Filtra los movimientos por usuario propietario de la cuenta.
+orden string Orden por fecha. Valores permitidos: asc o desc.
+per_page integer Cantidad de elementos por página. Máximo: 100.
 
 Ejemplos:
 
@@ -614,6 +623,7 @@ Ejemplo de elemento devuelto:
     }
 }
 ```
+
 Si se envía un valor inválido, por ejemplo:
 
 GET /api/v1/admin/movements?per_page=101
@@ -635,13 +645,14 @@ Cuerpo de ejemplo:
     "cbu_contraparte": null
 }
 ```
+
 Campos:
 
-Campo	Tipo	Obligatorio	Descripción
-cuenta_id	integer	Sí	ID de una cuenta existente.
-tipo	string	Sí	deposito, transferencia_salida o transferencia_entrada.
-monto	numeric	Sí	Debe ser mayor que cero.
-cbu_contraparte	string/null	No	CBU asociado al movimiento cuando corresponde.
+Campo Tipo Obligatorio Descripción
+cuenta_id integer Sí ID de una cuenta existente.
+tipo string Sí deposito, transferencia_salida o transferencia_entrada.
+monto numeric Sí Debe ser mayor que cero.
+cbu_contraparte string/null No CBU asociado al movimiento cuando corresponde.
 
 HTTP 201 Created
 
@@ -661,6 +672,7 @@ HTTP 201 Created
     }
 }
 ```
+
 Consultar un movimiento
 GET /api/v1/admin/movements/{movimiento}
 
@@ -698,6 +710,7 @@ HTTP 200 OK
     }
 }
 ```
+
 Importante: modificar administrativamente un movimiento cambia únicamente el historial. No recalcula ni modifica automáticamente el saldo de la cuenta.
 
 Eliminar un movimiento
@@ -884,7 +897,7 @@ Todas las rutas requieren autenticación JWT y rol de administrador.
 
 ### Autenticación
 
-```http
+````http
 Authorization: Bearer {access_token}
 ```
 
@@ -1076,7 +1089,172 @@ Para ejecutar la suite:
 
 php artisan test
 
+## WAL-012 — Actualizar o eliminar el perfil propio
 
+Tanto para actualizar con el método PUT o eliminar con el método DELETE del perfil debe estar autenticado. En caso de intentar alguna de estas acciones sin autenticar devuelve sin no autorizado:
+
+```json
+{
+    "message": "No autenticado",
+    "status": 401,
+    "error": {}
+}
+````
+
+### 🔄 Actualizar Perfil de Usuario
+
+Actualiza la información del perfil del usuario autenticado. Todos los campos son opcionales; solo se actualizarán aquellos que envíes en la petición.
+
+- Método: PUT
+
+- URL: `/api/v1/auth/profile`
+
+- Autenticación: Requerida (Bearer Token)
+
+Modificar un archivo php.ini de Laravel Herd y reiniciar HERD:
+
+```text
+upload_tmp_dir = "C:\Users\usuario\AppData\Local\Temp"
+
+; Maximum allowed size for uploaded files.
+; https://php.net/upload-max-filesize
+upload_max_filesize = 8M
+
+; Maximum number of files that can be uploaded via a single request
+max_file_uploads = 20
+
+post_max_size=10M
+```
+
+Ejecutar una sola vez:
+
+```bash
+php artisan storage: link
+```
+
+Laravel crea un enlace entre:
+
+```text
+public/storage
+```
+
+y:
+
+```text
+storage/app/public
+```
+
+De esta manera, los archivos almacenados en el disco `public` pueden ser accedidos desde la aplicación.
+
+### 📥 Envío de datos (Body)
+
+Para enviar información en el Body de la petición, debes seleccionar la opción `form-data` en tu cliente HTTP (Postman, Insomnia, Thunder Client, etc.) y cargar únicamente los campos que deseas actualizar. Todos los campos son opcionales.
+
+### 📋 Campos disponibles
+
+| Campo                   | Tipo   | Obligatorio | Descripción                                                                               |
+| ----------------------- | ------ | ----------- | ----------------------------------------------------------------------------------------- |
+| `nombre`                | string | No          | Nombre del usuario                                                                        |
+| `email`                 | string | No          | Identifica el usuario como único                                                          |
+| `password`              | string | No          | contraseña nueva del usuario                                                              |
+| `password_confirmation` | string | Condicional | Confirmación de la contraseña (debe coincidir con password)                               |
+| `edad`                  | string | No          | Edad del usuario debe ser mayor a 18 y menor a 120                                        |
+| `imagen`                | File   | No          | Imagen de perfil. Debes seleccionar un archivo (tipo File) desde el selector de form-data |
+
+⚠️ Importante:
+
+- Si envías el campo imagen, en form-data se debe cambiar el tipo de campo de Text a File y seleccionar el archivo desde tu equipo.
+
+**Respuesta no exitosa:** ![422 Unprocessable content](https://img.shields.io/badge/422-Unprocessable_content-red)
+
+📋 Tabla de errores por campo
+
+| Campo      | Regla     | Mensaje                                                      |
+| ---------- | --------- | ------------------------------------------------------------ |
+| `nombre`   | max       | El nombre del usuario no puede tener más de 255 caracteres.  |
+| `email`    | email     | El correo electrónico debe tener un formato válido           |
+| `email`    | unique    | El correo electrónico ya está en uso                         |
+| `password` | string    | La contraseña debe tener al menos 8 caracteres               |
+| `password` | confirmed | Debe ingresar nuevamente la misma contraseña                 |
+| `edad`     | integer   | La edad debe ser un número entero                            |
+| `edad`     | between   | La edad debe estar entre 18 y 120 años                       |
+| `imagen`   | file      | file La imagen debe ser un archivo válido                    |
+| `imagen`   | image     | El archivo debe ser una imagen válida                        |
+| `imagen`   | uploaded  | No se pudo cargar la imagen. Verifica que no supere los 2 MB |
+| `imagen`   | mimes     | La imagen debe estar en formato JPG, JPEG, PNG o WebP.       |
+
+### 🗑️ Eliminar Cuenta del Usuario Autenticado
+
+Elimina la cuenta del usuario autenticado mediante un borrado lógico (soft delete). El registro no se elimina físicamente de la base de datos;
+
+- Método: DELETE
+
+- URL: `/api/v1/profile`
+
+- Autenticación: Requerida (Bearer Token)
+
+- Body: Ninguno
+
+### 🔒 Comportamiento de la eliminación
+
+La eliminación del usuario no borra físicamente el registro ni sus datos relacionados. Se aplica un soft delete, por lo que:
+
+| Entidad afectada | Comportamiento                                                                                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| Usuario          | Se marca como eliminado (deleted_at con la fecha/hora). El registro permanece en la tabla users       |
+| Movimientos      | Se conservan en la base de datos. Las claves foráneas permanecen intactas para preservar el historial |
+| CBU guardados    | Se conservan en la base de datos. Las claves foráneas permanecen intactas                             |
+| Sesión / Token   | Se revoca el token de acceso actual. El usuario ya no puede autenticarse                              |
+
+### Simular plazo fijo
+
+Permite simular una inversión a plazo fijo utilizando interés simple. El usuario autenticado envía el monto a invertir y el plazo en días, y la API devuelve el interés ganado, el total a recibir y las fechas de creación y finalización de la inversión.
+
+Esta operación es solo una simulación: no persiste datos, no modifica el saldo de la cuenta y no genera movimientos.
+
+## Endpoint
+
+POST /api/v1/investments/fixed-term/simulate
+
+## cuerpo de la peticion
+
+{
+"monto": 100000,
+"plazo": 30
+}
+
+## Reglas de negocio
+
+    Se utiliza interés simple.
+    TNA (Tasa Nominal Anual): 30%.
+    Base de cálculo: 365 días.
+    Plazo permitido: entre 30 y 365 días.
+
+## Respuesta exitosa
+
+    HTTP 200 OK
+
+    "data": {
+        "Fecha de inicio": "2026-09-16T12:06:27.000000Z",
+        "Fecha de fin": "2026-10-16T12:06:27.000000Z"
+        "Monto Invertido": 100000,
+        "Interes ganado": 2465.75,
+        "Total": 102465.75,
+
+    }
+
+### 🚫 Intento de ingreso tras la eliminación
+
+- Si el usuario intenta iniciar sesión luego de haber eliminado su cuenta:
+
+♻️ Registro nuevamente tras la eliminación
+Si el usuario intenta registrarse nuevamente con el mismo correo electrónico:
+
+- ✅ Se recupera la información previamente asociada a su cuenta.
+
+- El registro se restaura (se limpia el campo deleted_at).
+
+- Los movimientos y CBU guardados previamente asociados vuelven a estar disponibles automáticamente al reactivarse la cuenta.
 
 
 ## 👥 Integrantes del Squad 1 Laravel
