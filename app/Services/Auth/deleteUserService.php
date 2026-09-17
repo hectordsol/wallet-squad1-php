@@ -9,7 +9,8 @@ class deleteUserService
     public function delete(User $user): User
     {
         $user->update(['eliminado' => true]);
+        $user->delete();
 
-        return $user->refresh();
+        return $user;
     }
 }
