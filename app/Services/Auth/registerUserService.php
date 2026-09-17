@@ -14,11 +14,12 @@ class registerUserService
 
     public function create(RegisterUserDTO $data)
     {
-        $usuario = User::withoutGlobalScopes()
+        $usuario = User::withTrashed()
             ->where('email', $data->email)
             ->first();
 
-        if ($usuario !== null && $usuario->eliminado) {
+        if ($usuario !== null && ($usuario->eliminado || $usuario->trashed())) {
+            $usuario->restore();
             $usuario->update(array_merge($data->toArray(), ['eliminado' => false]));
         } else {
             $usuario = User::create(array_merge(

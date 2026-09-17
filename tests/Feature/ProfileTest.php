@@ -184,6 +184,7 @@ class ProfileTest extends TestCase
             'id' => $user->id,
             'eliminado' => true,
         ]);
+        $this->assertSoftDeleted('users', ['id' => $user->id]);
     }
 
     public function test_usuario_eliminado_no_puede_iniciar_sesion(): void
@@ -201,14 +202,13 @@ class ProfileTest extends TestCase
 
     public function test_registro_reactiva_usuario_eliminado_y_conserva_su_cuenta(): void
     {
-        $user = User::factory()->create([
-            'email' => 'reactivar@example.com',
-            'eliminado' => true,
-        ]);
+        $user = User::factory()->create(['email' => 'reactivar@example.com']);
         $user->cuenta()->create([
             'cbu' => '0000000000000000000099',
             'saldo' => 100,
         ]);
+        $user->update(['eliminado' => true]);
+        $user->delete();
 
         $response = $this->postJson('/api/v1/auth/register', [
             'nombre' => 'Usuario reactivado',
@@ -227,6 +227,7 @@ class ProfileTest extends TestCase
             'id' => $user->id,
             'eliminado' => false,
             'nombre' => 'Usuario reactivado',
+            'deleted_at' => null,
         ]);
         $this->assertDatabaseCount('users', 1);
         $this->assertDatabaseCount('cuentas', 1);
