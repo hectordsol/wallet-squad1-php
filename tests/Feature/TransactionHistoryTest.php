@@ -72,23 +72,6 @@ class TransactionHistoryTest extends TestCase
 
     public function test_UsuarioRegistrado_consulta_sus_movimientos_de_otra_cuenta(): void
     {
-
-        $attackerUser = User::factory()->create();
-        Cuenta::factory()->create(['usuario_id' => $attackerUser->id]);
-        $attackerToken = auth("api")->login($attackerUser);
-
-
-        $victimUser = User::factory()->create();
-        $victimAccount = Cuenta::factory()->create(['usuario_id' => $victimUser->id]);
-
-        $response = $this->withToken($attackerToken)
-            ->getJson("/api/v1/movements?cuenta_id={$victimAccount->id}");
-
-        $response->assertStatus(403);
-    }
-
-    public function test_UsuarioRegistrado_consulta_sus_movimientos_de_otra_cuenta1(): void
-    {
         //usuario que intenta acceder a otra cuenta
         $attackerUser = User::factory()->create();
         $attackerAccount = Cuenta::factory()->create(['usuario_id' => $attackerUser->id]);
