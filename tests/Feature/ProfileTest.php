@@ -27,8 +27,10 @@ class ProfileTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'id' => $user->id,
-                'name' => $user->nombre,
+                'nombre' => $user->nombre,
                 'email' => $user->email,
+                'edad' => $user->edad,
+                'imagen' => $user->imagen,
             ])
             ->assertJsonMissing([
                 'password' => $user->password,

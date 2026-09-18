@@ -22,11 +22,11 @@ class ProfileResource extends JsonResource
         'name' => $this->nombre,
         */
         return [
-            'id' => $this->id,
-            'name' => $this->nombre,
-            'email' => $this->email,
-            'age' => $this->edad,
-            'image' => $this->imagen,
-        ];
+        'id' => $this->id,
+        'nombre' => $this->nombre,
+        'email' => $this->email,
+        'edad' => $this->edad,
+        'imagen' => $this->imagen,
+    ];
     }
 }
