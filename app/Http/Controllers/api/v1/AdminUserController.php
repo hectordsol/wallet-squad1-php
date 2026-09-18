@@ -3,14 +3,18 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreAdminUserRequest;
 use App\Http\Resources\Admin\AdminUserResource;
 use App\Models\User;
+use App\Services\Admin\CreateAdminUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AdminUserController extends Controller
 {
+    public function __construct(private CreateAdminUserService $createAdminUserService) {}
+
     public function index(Request $request): AnonymousResourceCollection
     {
         $request->validate([
@@ -26,6 +30,16 @@ class AdminUserController extends Controller
             ->paginate($perPage);
 
         return AdminUserResource::collection($usuarios);
+    }
+
+    public function store(StoreAdminUserRequest $request): JsonResponse
+    {
+        $usuario = $this->createAdminUserService->create($request->toDTO());
+
+        return response()->json(
+            new AdminUserResource($usuario),
+            201
+        );
     }
 
     public function show(User $user): JsonResponse

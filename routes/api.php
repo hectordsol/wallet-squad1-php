@@ -56,6 +56,7 @@ Route::prefix('v1')->group(function () {
             Route::delete('/movements/{movimiento}', [AdminMovementController::class, 'destroy']);
 
             Route::get('/users', [AdminUserController::class, 'index']);
+            Route::post('/users', [AdminUserController::class, 'store']);
             Route::get('/users/{user}', [AdminUserController::class, 'show']);
         });
     });
