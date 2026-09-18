@@ -4,16 +4,21 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreAdminUserRequest;
+use App\Http\Requests\Admin\UpdateAdminUserRequest;
 use App\Http\Resources\Admin\AdminUserResource;
 use App\Models\User;
 use App\Services\Admin\CreateAdminUserService;
+use App\Services\Admin\UpdateAdminUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AdminUserController extends Controller
 {
-    public function __construct(private CreateAdminUserService $createAdminUserService) {}
+    public function __construct(
+        private CreateAdminUserService $createAdminUserService,
+        private UpdateAdminUserService $updateAdminUserService,
+    ) {}
 
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -46,6 +51,16 @@ class AdminUserController extends Controller
     {
         return response()->json(
             new AdminUserResource($user),
+            200
+        );
+    }
+
+    public function update(UpdateAdminUserRequest $request, User $user): JsonResponse
+    {
+        $usuario = $this->updateAdminUserService->update($user, $request->toDTO());
+
+        return response()->json(
+            new AdminUserResource($usuario),
             200
         );
     }

@@ -58,6 +58,8 @@ Route::prefix('v1')->group(function () {
             Route::get('/users', [AdminUserController::class, 'index']);
             Route::post('/users', [AdminUserController::class, 'store']);
             Route::get('/users/{user}', [AdminUserController::class, 'show']);
+            Route::put('/users/{user}', [AdminUserController::class, 'update']);
+            Route::patch('/users/{user}', [AdminUserController::class, 'update']);
         });
     });
 });
