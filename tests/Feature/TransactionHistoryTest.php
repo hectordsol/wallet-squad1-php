@@ -99,16 +99,16 @@ class TransactionHistoryTest extends TestCase
         $victimAccount = Cuenta::factory()->create(['usuario_id' => $victimUser->id]);
 
         // movimiento de cuenta del usuario victima
-        \App\Models\Movimiento::create([
+        Movimiento::factory()->sinContraparte()->create([
             'cuenta_id' => $victimAccount->id,
             'tipo' => 'deposito',
             'monto' => 99999.00
         ]);
 
-        \App\Models\Movimiento::create([
+        Movimiento::factory()->sinContraparte()->create([
             'cuenta_id' => $attackerAccount->id,
             'tipo' => 'deposito',
-            'monto' => 1.00
+            'monto' => 1.00,
         ]);
 
         // usuario atacante intenta entrar a la cuenta de la victima
