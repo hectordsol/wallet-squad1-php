@@ -31,12 +31,11 @@ class registerUserFormRequest extends FormRequest
                 'string',
                 'email',
                 Rule::unique('users', 'email')->where(
-                    fn ($query) => $query->where('eliminado', false)
+                    fn($query) => $query->where('eliminado', false)
                 ),
             ],
             'password' => 'required|string|confirmed',
             'edad' => 'required|integer|min:18',
-            'rol' => 'sometimes|required|string',
         ];
     }
 
@@ -63,10 +62,6 @@ class registerUserFormRequest extends FormRequest
             'nombre.string' => 'El nombre debe ser texto.',
             'email.string' => 'El correo electrónico debe ser texto.',
             'password.string' => 'La contraseña debe ser texto.',
-            // Mensajes para el campo rol
-            'rol.required' => 'El rol es obligatorio.',
-            'rol.string' => 'El rol debe ser texto.',
-            'rol.in' => 'El rol debe ser uno de los siguientes: admin, usuario, moderador.',
         ];
     }
 
@@ -76,8 +71,7 @@ class registerUserFormRequest extends FormRequest
             nombre: $this->input('nombre'),
             email: $this->input('email'),
             password: $this->input('password'),
-            edad: $this->input('edad'),
-            rol: $this->input('rol')
+            edad: $this->input('edad')
         );
     }
 }
