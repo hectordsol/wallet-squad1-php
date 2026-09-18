@@ -8,7 +8,7 @@ class fixedTermDTO
      * Create a new class instance.
      */
     public function __construct(
-        public readonly int $monto,
+        public readonly float $monto,
         public readonly int $plazo,
 
     ) {}
