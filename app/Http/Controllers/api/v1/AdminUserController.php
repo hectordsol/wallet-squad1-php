@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\AdminUserResource;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -25,5 +26,13 @@ class AdminUserController extends Controller
             ->paginate($perPage);
 
         return AdminUserResource::collection($usuarios);
+    }
+
+    public function show(User $user): JsonResponse
+    {
+        return response()->json(
+            new AdminUserResource($user),
+            200
+        );
     }
 }
