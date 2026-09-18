@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateAdminUserRequest;
 use App\Http\Resources\Admin\AdminUserResource;
 use App\Models\User;
 use App\Services\Admin\CreateAdminUserService;
+use App\Services\Admin\DeleteAdminUserService;
 use App\Services\Admin\UpdateAdminUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class AdminUserController extends Controller
     public function __construct(
         private CreateAdminUserService $createAdminUserService,
         private UpdateAdminUserService $updateAdminUserService,
+        private DeleteAdminUserService $deleteAdminUserService,
     ) {}
 
     public function index(Request $request): AnonymousResourceCollection
@@ -63,5 +65,14 @@ class AdminUserController extends Controller
             new AdminUserResource($usuario),
             200
         );
+    }
+
+    public function destroy(User $user): JsonResponse
+    {
+        $this->deleteAdminUserService->delete($user);
+
+        return response()->json([
+            'message' => 'Usuario eliminado correctamente',
+        ], 200);
     }
 }

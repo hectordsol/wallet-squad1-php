@@ -60,6 +60,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/users/{user}', [AdminUserController::class, 'show']);
             Route::put('/users/{user}', [AdminUserController::class, 'update']);
             Route::patch('/users/{user}', [AdminUserController::class, 'update']);
+            Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);
         });
     });
 });
