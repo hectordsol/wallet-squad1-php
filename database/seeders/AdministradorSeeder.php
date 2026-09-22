@@ -15,7 +15,7 @@ class AdministradorSeeder extends Seeder
             [
                 'nombre' => env('ADMIN_NOMBRE', 'Administrador'),
                 'password' => Hash::make(env('ADMIN_PASSWORD', 'password')),
-                'edad' => 18,
+                'edad' => 30,
                 'rol' => 'administrador',
             ],
         );

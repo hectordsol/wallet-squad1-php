@@ -703,14 +703,16 @@ Esta operación es solo una simulación: no persiste datos, no modifica el saldo
 
 ## Endpoint
 
-POST /api/v1/investments/fixed-term/simulate
+`POST /api/v1/investments/fixed-term/simulate`
 
 ## cuerpo de la peticion
 
+```json
 {
 "monto": 100000,
 "plazo": 30
 }
+```
 
 ## Reglas de negocio
 
@@ -722,15 +724,321 @@ POST /api/v1/investments/fixed-term/simulate
 ## Respuesta exitosa
 
     HTTP 200 OK
+```json
+"data": {
+    "Fecha de inicio": "2026-09-16T12:06:27.000000Z",
+    "Fecha de fin": "2026-10-16T12:06:27.000000Z"
+    "Monto Invertido": 100000,
+    "Interes ganado": 2465.75,
+    "Total": 102465.75,
+}
+```
 
-    "data": {
-        "Fecha de inicio": "2026-09-16T12:06:27.000000Z",
-        "Fecha de fin": "2026-10-16T12:06:27.000000Z"
-        "Monto Invertido": 100000,
-        "Interes ganado": 2465.75,
-        "Total": 102465.75,
 
+## WAL-017 — Administrar Cuentas
+
+Permite a un usuario con rol `administrador` gestionar cuentas de usuarios.
+
+Todas las rutas requieren autenticación JWT y rol de administrador.
+
+### Autenticación
+
+```http
+Authorization: Bearer {access_token}
+```
+
+### Listar cuentas administrativos
+
+Un usuario sin token devuelve:
+
+```json
+{
+    "message": "No autenticado",
+    "status": 401,
+    "error": {}
+}
+```
+**Respuesta no exitosa:** ![401 Unauthorized](https://img.shields.io/badge/401-Unauthorized-red)
+
+En caso de iniciar sesión como usuario de cuenta:
+
+```json
+{
+    "message": "No autorizado. Se requiere rol de administrador.",
+    "status": 403,
+    "error": {}
+}
+```
+**Respuesta no exitosa:** ![403 Forbidden](https://img.shields.io/badge/403-Forbidden-red)
+
+
+### Endpoint
+
+```json
+GET /api/v1/admin/accounts` 
+```
+Devuelve listado completo paginado. El listado utiliza paginación nativa de Laravel y admite búsqueda por CBU. La respuesta por defecto envía paginado de 15 cuentas por página, orden ascendente en base a nombre de usuario de cuenta.
+Para enviar una petición personalizada solicitar por body:
+
+### cuerpo de la peticion (opcional):
+
+```json
+{
+    "orden" : "desc",
+    "per_page" : 10
+}
+```
+
+### Campos:
+
+| Campo                   | Tipo   | Obligatorio | Descripción                                                                               |
+| ----------------------- | ------ | ----------- | ----------------------------------------------------------------------------------------- |
+| `orden`	| string	| No	| "asc" o "desc". Si no se envía orden es "asc" |
+| `per_page`	| integer	| No	| Número entero indicando cuentas por página. Si no se envía son 15 |
+
+### Ejemplo de respuesta
+
+```json
+{
+    "data": [
+        {
+            "id": 8,
+            "usuario_id": 8,
+            "cbu": "4193711975380485558941",
+            "saldo": "0.00",
+            "tipo": "ahorro",
+            "moneda": "ARS",
+            "nombre_usuario": "Verónica Garica",
+            "created_at": "2026-09-20T22:34:38.000000Z"
+        },
+        {
+            "id": 5,
+            "usuario_id": 5,
+            "cbu": "6617429190875630447053",
+            "saldo": "0.00",
+            "tipo": "ahorro",
+            "moneda": "ARS",
+            "nombre_usuario": "Unai Carrión",
+            "created_at": "2026-09-20T22:34:38.000000Z"
+        },
+..
+        {
+            "id": 21,
+            "usuario_id": 21,
+            "cbu": "2087882938394801181022",
+            "saldo": "0.00",
+            "tipo": "ahorro",
+            "moneda": "ARS",
+            "nombre_usuario": "Ing. Iker Vela",
+            "created_at": "2026-09-20T22:34:38.000000Z"
+        }
+    ],
+    "links": {
+        "first": "http://127.0.0.1:8000/api/v1/admin/accounts?page=1",
+        "last": "http://127.0.0.1:8000/api/v1/admin/accounts?page=3",
+        "prev": null,
+        "next": "http://127.0.0.1:8000/api/v1/admin/accounts?page=2"
+    },
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 3,
+        "links": [
+            {
+                "url": null,
+                "label": "pagination.previous",
+                "page": null,
+                "active": false
+            },
+            {
+                "url": "http://127.0.0.1:8000/api/v1/admin/accounts?page=1",
+                "label": "1",
+                "page": 1,
+                "active": true
+            },
+            {
+                "url": "http://127.0.0.1:8000/api/v1/admin/accounts?page=2",
+                "label": "2",
+                "page": 2,
+                "active": false
+            },
+            {
+                "url": "http://127.0.0.1:8000/api/v1/admin/accounts?page=3",
+                "label": "3",
+                "page": 3,
+                "active": false
+            },
+            {
+                "url": "http://127.0.0.1:8000/api/v1/admin/accounts?page=2",
+                "label": "pagination.next",
+                "page": 2,
+                "active": false
+            }
+        ],
+        "path": "http://127.0.0.1:8000/api/v1/admin/accounts",
+        "per_page": 10,
+        "to": 10,
+        "total": 23
     }
+}
+```
+**Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green).
+
+### Ejemplo de respuesta no exitosa
+Si en la petición el cuerpo contiene lo siguiente:
+```json
+{
+    "orden" : "desc",
+    "per_page" : 102
+}
+```
+La respuesta sería:
+
+```json
+{
+    "message": "El valor del parámetro \"per_page\" no puede ser mayor a 100.",
+    "status": 422,
+    "error": {}
+}
+```
+
+
+### consulta por Query de CBU
+
+`GET /api/v1/admin/accounts?cbu=8236816523152794428993`: devuelve una cuenta si el número de cbu existe en la tabla de cuentas.
+
+```json
+{
+    "id": 4,
+    "usuario_id": 4,
+    "cbu": "8236816523152794428993",
+    "saldo": "0.00",
+    "tipo": "ahorro",
+    "moneda": "ARS",
+    "nombre_usuario": "África Gaytán",
+    "created_at": "2026-09-20T22:34:38.000000Z"
+}
+```
+**Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green).
+
+
+
+### consulta por Parametro Cuenta desde Administrador
+
+Endpoint
+```http
+GET /api/v1/admin/accounts/{cuenta}` 
+```
+
+
+`GET /api/v1/admin/accounts/4`
+ devuelve una cuenta si el id pasado por parámetro existe en la tabla de cuentas
+
+```json
+{
+    "id": 4,
+    "usuario_id": 4,
+    "cbu": "8236816523152794428993",
+    "saldo": "0.00",
+    "tipo": "ahorro",
+    "moneda": "ARS",
+    "nombre_usuario": "África Gaytán",
+    "created_at": "2026-09-20T22:34:38.000000Z"
+}
+```
+
+**Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green).
+
+```json
+{
+    "message": "No query results for model [App\\Models\\Cuenta] 222",
+    "status": 404,
+    "error": {}
+}
+```
+**Respuesta no exitosa:** ![404 Not Found](https://img.shields.io/badge/404-Not_Found-red).
+
+
+### Crear cuenta desde administrador
+
+Un administrador puede crear una cuenta a un usuario que no tenga cuenta creada:
+Endpoint:
+```http
+POST /api/v1/admin/accounts`
+```
+Cuerpo de la Petición (JSON):
+
+```json
+{
+    "usuario_id" : "23",
+    "tipo" : "ahorro",
+    "moneda" : "ARS"
+}
+```
+Respuesta:
+
+```json
+{
+    "id": 25,
+    "usuario_id": 23,
+    "cbu": "0000009765243354564986",
+    "saldo": "0.00",
+    "tipo": "ahorro",
+    "moneda": "ARS",
+    "nombre_usuario": "Roberto Carrasquillo",
+    "created_at": "2026-09-21T17:39:43.000000Z"
+}
+```
+
+**Respuesta exitosa:** ![201 Created](https://img.shields.io/badge/201-Created-green)
+
+
+
+### Actualizar Cuenta desde Administrador
+Un administrador puede actualizar una cuenta a un usuario. Solo se puede actualizar de manera opcional el tipo de cuenta (ahorro o corriente). También se puede cambiar el tipo de moneda, si es USD para dólar o ARS, para pesos argentinos.
+Endpoint:
+```http
+PUT o PATCH /api/v1/admin/accounts/{cuenta}`
+```
+Ejemplo donde la cuenta con id 25 era caja de ahorro, pasa a ser de cuenta corriente:
+```http
+PUT /api/v1/admin/accounts/25
+```
+
+Cuerpo de la Petición (JSON):
+```json
+{
+    "tipo" : "corriente",
+    "moneda" : "ARS"
+}
+```
+Respuesta:
+```json
+{
+    "id": 25,
+    "usuario_id": 23,
+    "cbu": "0000009765243354564986",
+    "saldo": "0.00",
+    "tipo": "corriente",
+    "moneda": "ARS",
+    "nombre_usuario": "Roberto Carrasquillo",
+    "created_at": "2026-09-21T17:39:43.000000Z"
+}
+```
+**Respuesta exitosa:** ![200 OK](https://img.shields.io/badge/200-OK-green).
+
+### Borrar Cuenta desde Administrador
+Un administrador puede borrar una cuenta de un usuario. El borrado es con SoftDelete. Lo que permite restaurar la cuenta desde Crear Cuenta con el Administrador
+Endpoint:
+```http
+DELETE /api/v1/admin/accounts/{cuenta}`
+```
+```http
+PUT /api/v1/admin/accounts/25
+```
+
+**Respuesta exitosa:** ![204 No Content](https://img.shields.io/badge/204-No_Content-green).
+
 
 
 ## WAL-018 — Administrar transacciones o movimientos
@@ -802,7 +1110,7 @@ Ejemplo de elemento devuelto:
 
 Si se envía un valor inválido, por ejemplo:
 
-GET /api/v1/admin/movements?per_page=101
+`GET /api/v1/admin/movements?per_page=101`
 
 la API responde:
 
