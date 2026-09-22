@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\api\v1\AccountController;
+use App\Http\Controllers\api\v1\AdminAccountController;
 use App\Http\Controllers\api\v1\AdminMovementController;
 use App\Http\Controllers\api\v1\AdminUserController;
 use App\Http\Controllers\api\v1\AuthController;
@@ -61,6 +62,13 @@ Route::prefix('v1')->group(function () {
             Route::put('/users/{user}', [AdminUserController::class, 'update']);
             Route::patch('/users/{user}', [AdminUserController::class, 'update']);
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);
+
+            Route::get('/accounts', [AdminAccountController::class, 'index']);
+            Route::post('/accounts', [AdminAccountController::class, 'store']);
+            Route::get('/accounts/{cuenta}', [AdminAccountController::class, 'show']);
+            Route::put('/accounts/{cuenta}', [AdminAccountController::class, 'update']);
+            Route::patch('/accounts/{cuenta}', [AdminAccountController::class, 'update']);
+            Route::delete('/accounts/{cuenta}', [AdminAccountController::class, 'destroy']);
         });
     });
 });
