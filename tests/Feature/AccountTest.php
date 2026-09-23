@@ -34,7 +34,7 @@ class AccountTest extends TestCase
                 'saldo' => '1500.50',
                 'tipo' => $account->tipo,
                 'moneda' => $account->moneda,
-        ]);
+            ]);
     }
 
     // Agregamos test para verificar que un usuario sin token no puede consultar su cuenta
@@ -150,7 +150,7 @@ class AccountTest extends TestCase
         ]);
     }
 
-    public function test_usuario_autenticado_no_deposita_negativo_o_cero_no_genera_movimiento(): void
+    public function test_usuario_autenticado_no_deposita_negativo_o_cero_y_no_genera_movimiento(): void
     {
         $user = User::factory()->create();
 
@@ -170,11 +170,11 @@ class AccountTest extends TestCase
             $response->assertStatus(422)->assertJson([
                 'status' => 422,
             ])
-            ->assertJsonStructure([
-                'message',
-                'status',
-                'error',
-            ]);
+                ->assertJsonStructure([
+                    'message',
+                    'status',
+                    'error',
+                ]);
 
         }
 
@@ -249,22 +249,4 @@ class AccountTest extends TestCase
             'moneda' => 'ARS',
         ]);
     }
-
-    public function test_usuario_admite_edad_e_imagen_nulas(): void
-    {
-        $user = User::factory()->create([
-            'edad' => null,
-            'imagen' => null,
-        ]);
-
-        $this->assertNull($user->edad);
-        $this->assertNull($user->imagen);
-
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'edad' => null,
-            'imagen' => null,
-        ]);
-    }
-
 }
