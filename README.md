@@ -1249,7 +1249,191 @@ Para ejecutar la suite:
 php artisan test
 ```
 
+## WAL-020 — Unificar errores HTTP y seguridad básica
 
+Se unificó el manejo de errores HTTP de la API y se agregaron medidas básicas de seguridad para mantener respuestas JSON consistentes y evitar la exposición de información sensible.
+
+### Respuestas de error de la API
+
+Todas las solicitudes realizadas bajo `/api/v1` devuelven errores en formato JSON, incluso cuando el cliente no envía el header:
+
+```http
+Accept: application/json
+```
+
+La API utiliza de forma consistente los siguientes códigos HTTP:
+
+| Código | Descripción |
+|---|---|
+| `401 Unauthorized` | El usuario no está autenticado o el token es inválido |
+| `403 Forbidden` | El usuario está autenticado pero no tiene permisos para realizar la acción |
+| `404 Not Found` | El recurso o la ruta solicitada no existe |
+| `422 Unprocessable Entity` | Los datos enviados no superan las validaciones |
+| `429 Too Many Requests` | Se superó el límite de intentos fallidos de inicio de sesión |
+| `500 Internal Server Error` | Se produjo un error interno no controlado |
+
+### Error 401 — No autenticado
+
+Las rutas protegidas requieren un JWT válido.
+
+Ejemplo:
+
+```json
+{
+    "message": "No autenticado",
+    "status": 401,
+    "error": {}
+}
+```
+
+Las peticiones realizadas a `/api/v1` no son redirigidas a una ruta web de login.
+
+### Error 403 — Sin permisos
+
+Un usuario autenticado que intenta acceder a una ruta administrativa sin poseer el rol `administrador` recibe:
+
+```json
+{
+    "message": "No autorizado. Se requiere rol de administrador.",
+    "status": 403,
+    "error": {}
+}
+```
+
+### Error 404 — Recurso inexistente
+
+Cuando una ruta o recurso solicitado no existe, la API responde en formato JSON con estado:
+
+```text
+HTTP 404 Not Found
+```
+
+### Error 422 — Validación
+
+Los errores producidos por los Form Requests se devuelven en formato JSON utilizando:
+
+```text
+HTTP 422 Unprocessable Entity
+```
+
+### Protección de errores internos
+
+Los errores internos del servidor no exponen al cliente el mensaje original de la excepción.
+
+La respuesta utiliza:
+
+```json
+{
+    "message": "Error interno del servidor",
+    "status": 500,
+    "error": {}
+}
+```
+
+De esta forma se evita revelar información interna como consultas SQL, nombres de tablas, rutas del servidor u otros detalles sensibles.
+
+### Protección contra intentos repetidos de login
+
+El endpoint:
+
+```http
+POST /api/v1/auth/login
+```
+
+limita los intentos fallidos de autenticación.
+
+El límite se calcula utilizando la combinación de:
+
+- email normalizado;
+- dirección IP del cliente.
+
+El email se normaliza eliminando espacios al inicio y al final y convirtiéndolo a minúsculas.
+
+Se permiten hasta **5 intentos fallidos por minuto** para la misma combinación de email e IP.
+
+Los cinco primeros intentos con credenciales incorrectas responden:
+
+```text
+HTTP 401 Unauthorized
+```
+
+Al superar el límite, la API responde:
+
+```text
+HTTP 429 Too Many Requests
+```
+
+Ejemplo:
+
+```json
+{
+    "message": "Demasiados intentos de inicio de sesión. Intente nuevamente más tarde.",
+    "status": 429,
+    "retry_after": 60,
+    "error": {}
+}
+```
+
+La respuesta también incluye el header HTTP:
+
+```http
+Retry-After: 60
+```
+
+El valor indica la cantidad de segundos restantes antes de poder volver a intentar el inicio de sesión.
+
+Cuando el usuario inicia sesión correctamente, los intentos fallidos anteriores para esa combinación de email e IP son eliminados.
+
+### Protección de secretos
+
+Los archivos de entorno sensibles se encuentran excluidos del control de versiones mediante `.gitignore`.
+
+Entre ellos:
+
+```text
+.env
+.env.backup
+.env.production
+```
+
+El archivo `.env.example` conserva únicamente la variable:
+
+```env
+JWT_SECRET=
+```
+
+Cada desarrollador debe generar su propio secreto JWT localmente:
+
+```bash
+php artisan jwt:secret
+```
+
+El valor generado no debe subirse al repositorio.
+
+### Pruebas WAL-020
+
+Se agregaron tests de integración para comprobar:
+
+- bloqueo después de cinco intentos fallidos de login;
+- normalización del email utilizado por el limitador;
+- limpieza de intentos fallidos después de un login exitoso;
+- respuesta `401` JSON sin header `Accept`;
+- respuesta `403` para usuarios sin permisos administrativos;
+- respuesta `404` JSON para rutas inexistentes;
+- respuesta `422` JSON para errores de validación;
+- respuesta `500` sin exposición de información interna.
+
+Para ejecutar específicamente los tests de WAL-020:
+
+```bash
+php artisan test tests/Feature/HttpSecurityTest.php
+```
+
+Para ejecutar toda la suite:
+
+```bash
+php artisan test
+```
 
 ## 👥 Integrantes del Squad 1 Laravel
 
