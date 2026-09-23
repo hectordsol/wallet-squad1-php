@@ -80,10 +80,9 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return response()->json([
-                // "message" => "Error interno del servidor",
-                'message' => $exception->getMessage(),
+                'message' => 'Error interno del servidor',
                 'status' => 500,
-                'error' => (object) [],
+                'error' => (object) [],//se cambio para no exponer datos
             ], 500);
         });
     })->create();

@@ -15,6 +15,8 @@ use App\Services\Auth\registerUserService;
 use App\Services\Auth\updateUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -32,17 +34,36 @@ class AuthController extends Controller
         return response()->json(new registerUserResource($user), 201);
     }
 
+    //nuevo login para el RateLimit de intentos de sesión
     public function login(loginUserFormRequest $request): JsonResponse
     {
+        $email = Str::lower(trim((string) $request->input('email')));
+        $key = 'login:' . $email . '|' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+
+            return response()->json([
+                'message' => 'Demasiados intentos de inicio de sesión. Intente nuevamente más tarde.',
+                'status' => 429,
+                'retry_after' => $seconds,
+                'error' => (object) [],
+            ], 429)->header('Retry-After', (string) $seconds);
+        }
+
         $token = $this->login_user_service->login($request->toDTO());
 
         if ($token === null) {
+            RateLimiter::hit($key, 60);
+
             return response()->json([
                 'message' => 'Credenciales invalidas',
                 'status' => 401,
                 'error' => (object) [],
             ], 401);
         }
+
+        RateLimiter::clear($key);
 
         return response()->json([
             'access_token' => $token,
