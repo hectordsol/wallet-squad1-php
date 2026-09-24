@@ -4,12 +4,12 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Movements\getTransactionsResource;
-use App\Services\Movements\GetTransactionsService;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Request;
 use App\Models\Cuenta;
 use App\Models\Movimiento;
+use App\Services\Movements\GetTransactionsService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -18,9 +18,13 @@ class MovementsController extends Controller
     //
     public function __construct(private GetTransactionsService $get_transactios_service) {}
 
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $movements = $this->get_transactios_service->GetTransactios();
+        $movements = $this->get_transactios_service->GetTransactios(
+            perPage: (int) $request->query('per_page', 15),
+            sort: (string) $request->query('sort', 'desc'),
+        );
+
         return getTransactionsResource::collection($movements);
     }
 
@@ -29,6 +33,8 @@ class MovementsController extends Controller
         $request->validate([
             'destination_cbu' => ['required', 'string'],
             'amount' => ['required', 'numeric', 'gt:0'],
+        ], [
+            'amount.gt' => 'no se puede transferir un monto menor o igual a cero',
         ]);
 
         $user_origen = Auth::guard('api')->user();

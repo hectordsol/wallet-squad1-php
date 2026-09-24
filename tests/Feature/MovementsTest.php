@@ -122,7 +122,7 @@ class MovementsTest extends TestCase
             $response
                 ->assertStatus(422)
                 ->assertJson([
-                    'message' => 'The amount field must be greater than 0.',
+                    'message' => 'no se puede transferir un monto menor o igual a cero',
                 ]);
         }
 
