@@ -1,7 +1,12 @@
 <?php
 
-test('the application returns a successful response', function () {
-    $response = $this->get('/');
+test('la api rechaza un login sin credenciales', function () {
+    $response = $this->postJson('/api/v1/auth/login', []);
 
-    $response->assertStatus(200);
+    $response
+        ->assertUnprocessable()
+        ->assertJson([
+            'status' => 422,
+            'error' => [],
+        ]);
 });

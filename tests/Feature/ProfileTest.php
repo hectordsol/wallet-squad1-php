@@ -75,7 +75,7 @@ class ProfileTest extends TestCase
         $this->assertTrue(Hash::check('nueva-password', $user->password));
     }
 
-    public function test_usuario_autenticado_puede_actualizar_su_imagen_con_multipart(): void
+    public function test_usuario_autenticado_puede_actualizar_imagen_de_perfil(): void
     {
         Storage::fake('public');
 
@@ -142,7 +142,7 @@ class ProfileTest extends TestCase
         ]);
     }
 
-    public function test_update_rechaza_datos_invalidos_y_no_persiste_cambios(): void
+    public function test_usuario_autenticado_update_rechaza_datos_invalidos_y_no_persiste_cambios(): void
     {
         $user = User::factory()->create([
             'edad' => 30,
