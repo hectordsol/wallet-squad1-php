@@ -151,6 +151,57 @@ class AuthController extends Controller
         ], 200);
     }
 
+    #[OA\Put(
+        path: '/api/v1/profile',
+        summary: 'Actualizar el perfil del usuario autenticado',
+        description: 'Se envia como multipart/form-data porque acepta una imagen. Todos los campos son opcionales: solo se modifican los que se envian. El rol no puede modificarse.',
+        tags: ['Perfil'],
+        security: [['bearerAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: false,
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    properties: [
+                        new OA\Property(property: 'nombre', type: 'string', maxLength: 255, example: 'Nuevo Nombre'),
+                        new OA\Property(property: 'email', type: 'string', format: 'email', maxLength: 255, example: 'nuevo@test.com'),
+                        new OA\Property(property: 'password', type: 'string', format: 'password', minLength: 8, example: 'nueva1234'),
+                        new OA\Property(property: 'password_confirmation', type: 'string', format: 'password', example: 'nueva1234'),
+                        new OA\Property(property: 'edad', type: 'integer', minimum: 18, maximum: 120, example: 31),
+                        new OA\Property(property: 'imagen', description: 'JPG, JPEG, PNG o WebP de hasta 2 MB', type: 'string', format: 'binary'),
+                    ],
+                    type: 'object'
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Perfil actualizado correctamente',
+                content: new OA\JsonContent(
+                    required: ['id', 'nombre', 'email', 'edad', 'imagen', 'rol'],
+                    properties: [
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'nombre', type: 'string', example: 'Nuevo Nombre'),
+                        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'nuevo@test.com'),
+                        new OA\Property(property: 'edad', type: 'integer', example: 31),
+                        new OA\Property(property: 'imagen', type: 'string', nullable: true, example: null),
+                        new OA\Property(property: 'rol', type: 'string', example: 'usuario'),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Usuario no autenticado',
+                content: new OA\JsonContent(ref: '#/components/schemas/ApiError')
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Error de validacion (email en uso, edad fuera de rango, contraseñas distintas o imagen invalida)',
+                content: new OA\JsonContent(ref: '#/components/schemas/ApiError')
+            ),
+        ]
+    )]
     // Método para actualizar el perfil del usuario autenticado
     public function update(updateUserFormRequest $request): JsonResponse
     {
@@ -162,6 +213,24 @@ class AuthController extends Controller
         return response()->json(new updateUserResource($user), 200);
     }
 
+    #[OA\Delete(
+        path: '/api/v1/profile',
+        summary: 'Dar de baja el perfil del usuario autenticado',
+        description: 'Baja logica: la cuenta y los movimientos se conservan. El token usado queda invalidado. Registrarse de nuevo con el mismo email reactiva la cuenta.',
+        tags: ['Perfil'],
+        security: [['bearerAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 204,
+                description: 'Perfil dado de baja correctamente (sin contenido)'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Usuario no autenticado',
+                content: new OA\JsonContent(ref: '#/components/schemas/ApiError')
+            ),
+        ]
+    )]
     // Método para dar de baja al usuario autenticado
     public function delete(): JsonResponse
     {
