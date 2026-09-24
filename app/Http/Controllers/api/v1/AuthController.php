@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
 {
@@ -26,7 +27,45 @@ class AuthController extends Controller
         private updateUserService $update_user_service,
         private deleteUserService $delete_user_service,
     ) {}
-
+    #[OA\Post(
+        path: '/api/v1/auth/register',
+        summary: 'Registrar un usuario',
+        description: 'Crea el usuario con rol "usuario" y su cuenta asociada con saldo 0.00. El rol no puede elegirse desde este endpoint.',
+        tags: ['Autenticación'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['nombre', 'email', 'password', 'password_confirmation', 'edad'],
+                properties: [
+                    new OA\Property(property: 'nombre', type: 'string', example: 'Swagger Test'),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'swagger@test.com'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'secret123'),
+                    new OA\Property(property: 'password_confirmation', type: 'string', format: 'password', example: 'secret123'),
+                    new OA\Property(property: 'edad', type: 'integer', minimum: 18, example: 30),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Usuario registrado correctamente',
+                content: new OA\JsonContent(
+                    required: ['id', 'nombre', 'email', 'rol'],
+                    properties: [
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'nombre', type: 'string', example: 'Swagger Test'),
+                        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'swagger@test.com'),
+                        new OA\Property(property: 'rol', type: 'string', example: 'usuario'),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Error de validacion (campos faltantes, email duplicado, contraseñas distintas o menor de 18)',
+                content: new OA\JsonContent(ref: '#/components/schemas/ApiError')
+            ),
+        ]
+    )]
     public function register(registerUserFormRequest $request): JsonResponse
     {
         $user = $this->register_user_service->create($request->toDTO());
@@ -34,6 +73,46 @@ class AuthController extends Controller
         return response()->json(new registerUserResource($user), 201);
     }
 
+    #[OA\Post(
+        path: '/api/v1/auth/login',
+        summary: 'Iniciar sesion',
+        description: 'Devuelve un JWT. Copia el valor de access_token y cargalo en el boton Authorize (sin escribir "Bearer").',
+        tags: ['Autenticación'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'password'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'swagger@test.com'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'secret123'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Login correcto',
+                content: new OA\JsonContent(
+                    required: ['access_token', 'token_type', 'expires_in'],
+                    properties: [
+                        new OA\Property(property: 'access_token', type: 'string', example: 'eyJ0eXAiOiJKV1QiLCJhbGciOi...'),
+                        new OA\Property(property: 'token_type', type: 'string', example: 'Bearer'),
+                        new OA\Property(property: 'expires_in', type: 'integer', example: 3600),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Credenciales incorrectas',
+                content: new OA\JsonContent(ref: '#/components/schemas/ApiError')
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Error de validacion',
+                content: new OA\JsonContent(ref: '#/components/schemas/ApiError')
+            ),
+        ]
+    )]
     //nuevo login para el RateLimit de intentos de sesión
     public function login(loginUserFormRequest $request): JsonResponse
     {
