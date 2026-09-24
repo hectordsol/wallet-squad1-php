@@ -93,6 +93,16 @@ use OpenApi\Attributes as OA;
     ],
     type: 'object'
 )]
+#[OA\Schema(
+    schema: 'Favorite',
+    required: ['id', 'cbu', 'titular'],
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 1),
+        new OA\Property(property: 'cbu', type: 'string', example: '0000000000000000000002'),
+        new OA\Property(property: 'titular', description: 'Nombre del dueño de la cuenta guardada', type: 'string', nullable: true, example: 'Beto'),
+    ],
+    type: 'object'
+)]
 abstract class Controller
 {
     //
