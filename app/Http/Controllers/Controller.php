@@ -133,6 +133,31 @@ use OpenApi\Attributes as OA;
     ],
     type: 'object'
 )]
+
+#[OA\Schema(
+    schema: 'AdminMovement',
+    required: ['id', 'tipo', 'monto', 'cbu_contraparte', 'fecha', 'cuenta'],
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 10),
+        new OA\Property(property: 'tipo', type: 'string', enum: ['deposito', 'transferencia_salida', 'transferencia_entrada'], example: 'deposito'),
+        new OA\Property(property: 'monto', description: 'Siempre con dos decimales', type: 'string', example: '150.00'),
+        new OA\Property(property: 'cbu_contraparte', type: 'string', nullable: true, example: null),
+        new OA\Property(property: 'fecha', description: 'Fecha de creacion del movimiento', type: 'string', format: 'date-time', example: '2026-09-22T03:35:00.000000Z'),
+        new OA\Property(
+            property: 'cuenta',
+            description: 'Cuenta a la que pertenece el movimiento',
+            properties: [
+                new OA\Property(property: 'id', type: 'integer', example: 3),
+                new OA\Property(property: 'cbu', type: 'string', example: '0000000000000000000002'),
+                new OA\Property(property: 'tipo', type: 'string', example: 'ahorro'),
+                new OA\Property(property: 'moneda', type: 'string', example: 'ARS'),
+                new OA\Property(property: 'usuario_id', type: 'integer', example: 2),
+            ],
+            type: 'object'
+        ),
+    ],
+    type: 'object'
+)]
 abstract class Controller
 {
     //
