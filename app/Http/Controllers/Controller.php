@@ -117,6 +117,22 @@ use OpenApi\Attributes as OA;
     ],
     type: 'object'
 )]
+
+#[OA\Schema(
+    schema: 'AdminAccount',
+    required: ['id', 'usuario_id', 'cbu', 'saldo', 'tipo', 'moneda', 'nombre_usuario', 'created_at'],
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 3),
+        new OA\Property(property: 'usuario_id', type: 'integer', example: 2),
+        new OA\Property(property: 'cbu', type: 'string', example: '0000000000000000000002'),
+        new OA\Property(property: 'saldo', description: 'Siempre con dos decimales', type: 'string', example: '1550.50'),
+        new OA\Property(property: 'tipo', type: 'string', enum: ['ahorro', 'corriente'], example: 'ahorro'),
+        new OA\Property(property: 'moneda', type: 'string', enum: ['ARS', 'USD'], example: 'ARS'),
+        new OA\Property(property: 'nombre_usuario', description: 'Nombre del titular', type: 'string', nullable: true, example: 'Ana'),
+        new OA\Property(property: 'created_at', type: 'string', format: 'date-time', example: '2026-09-22T03:35:00.000000Z'),
+    ],
+    type: 'object'
+)]
 abstract class Controller
 {
     //
