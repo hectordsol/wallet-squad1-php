@@ -1434,6 +1434,11 @@ Para ejecutar toda la suite:
 ```bash
 php artisan test
 ```
+## WAL-022 — Documentación de la API con Swagger
+
+La API está documentada con OpenAPI y se puede probar desde `http://localhost:8000/api/documentation`.
+
+Guía de uso, formato de errores, paginación y advertencias: [docs/swagger.md](docs/swagger.md).
 
 ## 👥 Integrantes del Squad 1 Laravel
 
