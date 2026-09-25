@@ -103,6 +103,20 @@ use OpenApi\Attributes as OA;
     ],
     type: 'object'
 )]
+#[OA\Schema(
+    schema: 'AdminUser',
+    required: ['id', 'nombre', 'email', 'edad', 'imagen', 'rol', 'created_at'],
+    properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 2),
+        new OA\Property(property: 'nombre', type: 'string', example: 'Ana'),
+        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'ana@test.com'),
+        new OA\Property(property: 'edad', type: 'integer', example: 25),
+        new OA\Property(property: 'imagen', type: 'string', nullable: true, example: null),
+        new OA\Property(property: 'rol', type: 'string', enum: ['usuario', 'administrador'], example: 'usuario'),
+        new OA\Property(property: 'created_at', type: 'string', format: 'date-time', example: '2026-09-22T03:35:00.000000Z'),
+    ],
+    type: 'object'
+)]
 abstract class Controller
 {
     //
