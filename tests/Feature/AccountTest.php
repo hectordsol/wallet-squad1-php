@@ -18,6 +18,8 @@ class AccountTest extends TestCase
         $account = $user->cuenta()->create([
             'cbu' => '0000000000000000000001',
             'saldo' => 1500.50,
+            'tipo' => 'ahorro',
+            'moneda' => 'ARS',
         ]);
 
         $token = auth('api')->login($user);
@@ -29,7 +31,9 @@ class AccountTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'cbu' => $account->cbu,
-                'balance' => '1500.50',
+                'saldo' => '1500.50',
+                'tipo' => $account->tipo,
+                'moneda' => $account->moneda,
             ]);
     }
 
@@ -66,7 +70,7 @@ class AccountTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'cbu' => $account1->cbu,
-                'balance' => '100.00',
+                'saldo' => '100.00',
             ])
             ->assertJsonMissing([
                 'cbu' => '0000000000000000000002',
@@ -95,7 +99,7 @@ class AccountTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'cbu' => $account->cbu,
-                'balance' => number_format($account->saldo + $depositAmount, 2, '.', ''),
+                'saldo' => number_format($account->saldo + $depositAmount, 2, '.', ''),
             ]);
     }
 
@@ -146,7 +150,7 @@ class AccountTest extends TestCase
         ]);
     }
 
-    public function test_usuario_autenticado_no_deposita_negativo_o_cero_no_genera_movimiento(): void
+    public function test_usuario_autenticado_no_deposita_negativo_o_cero_y_no_genera_movimiento(): void
     {
         $user = User::factory()->create();
 
@@ -163,9 +167,15 @@ class AccountTest extends TestCase
                     'amount' => $depositAmount,
                 ]);
 
-            $response
-                ->assertStatus(422)
-                ->assertJsonValidationErrors(['amount']);
+            $response->assertStatus(422)->assertJson([
+                'status' => 422,
+            ])
+                ->assertJsonStructure([
+                    'message',
+                    'status',
+                    'error',
+                ]);
+
         }
 
         $this->assertDatabaseCount('movimientos', 0);
@@ -192,7 +202,7 @@ class AccountTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'cbu' => $account->cbu,
-                'balance' => number_format($account->saldo + $depositAmount, 2, '.', ''),
+                'saldo' => number_format($account->saldo + $depositAmount, 2, '.', ''),
             ]);
     }
 
@@ -217,5 +227,26 @@ class AccountTest extends TestCase
                 'message' => 'No autenticado',
                 'status' => 401,
             ]);
+    }
+
+    public function test_cuenta_se_crea_con_tipo_y_moneda_por_defecto(): void
+    {
+        $user = User::factory()->create();
+
+        $account = $user->cuenta()->create([
+            'cbu' => '0000000000000000000001',
+            'saldo' => 0,
+        ]);
+
+        $account->refresh();
+
+        $this->assertEquals('ahorro', $account->tipo);
+        $this->assertEquals('ARS', $account->moneda);
+
+        $this->assertDatabaseHas('cuentas', [
+            'id' => $account->id,
+            'tipo' => 'ahorro',
+            'moneda' => 'ARS',
+        ]);
     }
 }

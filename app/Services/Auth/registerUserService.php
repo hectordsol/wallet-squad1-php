@@ -7,23 +7,37 @@ use App\DTO\Auth\RegisterUserDTO;
 use App\Models\User;
 use App\Services\Account\createAccountService;
 
-
 class registerUserService
 {
-    //inyecta el servcio en el constructor
+    // inyecta el servcio en el constructor
     public function __construct(private createAccountService $createAccountService) {}
 
     public function create(RegisterUserDTO $data)
     {
-        //crea la cuneta del usario(el password se hashea en el modelo)
-        $usuario = User::create($data->toArray());
-        $usuario->refresh(); //se usa para traer el rol por default
-        //agrega el id del usuario al dto
+        $usuario = User::withTrashed()
+            ->where('email', $data->email)
+            ->first();
+
+        if ($usuario !== null && ($usuario->eliminado || $usuario->trashed())) {
+            $usuario->restore();
+            $usuario->update(array_merge($data->toArray(), ['eliminado' => false]));
+        } else {
+            $usuario = User::create(array_merge(
+                $data->toArray(),
+                ['eliminado' => false]
+            ));
+        }
+
+        $usuario->refresh(); // se usa para traer el rol por default
+
         $cuenta = new createAccountDTO(
             usuario_id: $usuario->id
         );
 
-        $this->createAccountService->create($cuenta);
+        if (! $usuario->cuenta()->exists()) {
+            $this->createAccountService->create($cuenta);
+        }
+
         return $usuario;
     }
 }

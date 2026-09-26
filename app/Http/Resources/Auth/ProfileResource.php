@@ -15,15 +15,18 @@ class ProfileResource extends JsonResource
     public function toArray(Request $request): array
     {
         //Retornamos el id, nombre y email del usuario autenticado
+        //Se agrega el campo edad y la imagen del usuario autenticado
         /*
         Como internamente el proyecto utiliza el campo nombre,
         el Resource lo transforma a name para respetar el formato solicitado por la API:
         'name' => $this->nombre,
         */
         return [
-            'id' => $this->id,
-            'name' => $this->nombre,
-            'email' => $this->email,
-        ];
+        'id' => $this->id,
+        'nombre' => $this->nombre,
+        'email' => $this->email,
+        'edad' => $this->edad,
+        'imagen' => $this->imagen,
+    ];
     }
 }

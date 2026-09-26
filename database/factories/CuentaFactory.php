@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Cuenta;
-use App\Models\Usuario;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +19,7 @@ class CuentaFactory extends Factory
     public function definition(): array
     {
         return [
-            'usuario_id' => Usuario::factory(),
+            'usuario_id' => User::factory(),
             'cbu' => fake()->unique()->numerify('######################'),
             'saldo' => '0.00',
             'tipo' => 'ahorro',
